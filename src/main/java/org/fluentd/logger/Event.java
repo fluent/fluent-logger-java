@@ -1,4 +1,4 @@
-package org.fluent.logger;
+package org.fluentd.logger;
 
 import java.util.Map;
 

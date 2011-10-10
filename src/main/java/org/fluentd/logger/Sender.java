@@ -1,11 +1,10 @@
-package org.fluent.logger;
+package org.fluentd.logger;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
@@ -28,7 +27,7 @@ public class Sender {
 
     private BufferedOutputStream out;
 
-    private ByteBuffer pendingBuffer;
+    private ByteBuffer pendings;
 
     public Sender(String tag) throws IOException {
 	this(tag, "localhost", 24224);
@@ -46,29 +45,23 @@ public class Sender {
 	} catch (IOException e) {
 	    close();
 	}
-	pendingBuffer = ByteBuffer.allocate(bufferCapacity);
+	pendings = ByteBuffer.allocate(bufferCapacity);
     }
 
     private void connect() throws IOException {
 	socket = new Socket();
-	socket.connect(server, timeout); // the timeout value to be used in milliseconds
+	socket.connect(server);
+	socket.setSoTimeout(timeout); // the timeout value to be used in milliseconds
 	out = new BufferedOutputStream(socket.getOutputStream());
     }
 
     private void reconnect() throws IOException {
-	boolean b = false;
+	// expt reconnection
 	if (socket.isClosed()) {
 	    socket = null;
-	    b = true;
+	    connect();
 	} else if (! socket.isConnected()) {
 	    close();
-	    b = true;
-	}
-	if (b) {
-	    try {
-		Thread.sleep(3 * 1000);
-	    } catch (InterruptedException e) { // ignore
-	    }
 	    connect();
 	}
     }
@@ -116,26 +109,32 @@ public class Sender {
 
     private synchronized void send(byte[] bytes) throws IOException {
 	// check pending buffer
-	try {
-	    pendingBuffer.put(bytes);
-	} catch (BufferOverflowException e) {
-	    pendingBuffer.clear();
-	    pendingBuffer.put(bytes);
+	int pos = pendings.position();
+	if (pos > 0) {
+	    byte[] b = new byte[pos + bytes.length];
+	    pendings.get(b, 0, pos);
+	    System.arraycopy(b, pos, bytes, 0, bytes.length);
+	    bytes = b;
 	}
 
-	// check whether connection is established or not
-	reconnect();
-
 	try {
-	    pendingBuffer.flip();
-	    int len = pendingBuffer.remaining();
-	    byte[] b = new byte[len];
-	    pendingBuffer.get(b, 0, b.length);
-	    out.write(b);
+	    // check whether connection is established or not
+	    reconnect();
+
+	    out.write(bytes);
 	    out.flush();
-	    pendingBuffer.clear();
+	    pendings.clear();
 	} catch (IOException e) {
+	    // close socket
 	    close();
+
+	    // check size of pending buffer
+	    if (bytes.length > pendings.capacity()) {
+		pendings.clear();
+	    } else {
+		pendings.clear();
+		pendings.put(bytes);
+	    }
 	}
     }
 }

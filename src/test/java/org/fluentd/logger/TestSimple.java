@@ -1,8 +1,9 @@
-package org.fluent.logger;
+package org.fluentd.logger;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import org.fluentd.logger.Sender;
 import org.junit.Test;
 
 public class TestSimple {
