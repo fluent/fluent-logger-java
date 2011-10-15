@@ -24,6 +24,7 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 import org.msgpack.MessagePack;
@@ -45,10 +46,74 @@ public class Sender {
         public Event() {
         }
 
+        public Event(String tag, long timestamp, Map<String, String> data) {
+            this.tag = tag;
+            this.timestamp = timestamp;
+            this.data = data;
+        }
+
         @Override
         public String toString() {
             return String.format("Event[tag=%s,timestamp=%d,data=%s]",
                     new Object[] { tag, timestamp, data.toString() });
+        }
+    }
+
+    /**
+     * Calcurate exponential delay for reconnecting
+     */
+    private static class ExponentialDelayReconnection {
+        private double wait = 0.5;
+
+        private double waitIncrRate = 1.5;
+
+        private double waitMax = 60;
+
+        private int waitMaxCount;
+
+        private LinkedList<Long> errorHist;
+
+        public ExponentialDelayReconnection() {
+            waitMaxCount = getWaitMaxCount();
+            errorHist = new LinkedList<Long>();
+        }
+
+        private int getWaitMaxCount() {
+            double r = waitMax / wait;
+            for (int j = 1; j <= 100; j++) {
+                if (r < waitIncrRate) {
+                    return j + 1;
+                }
+                r = r / waitIncrRate;
+            }
+            return 100;
+        }
+
+        public void addErrorHistory(long timestamp) {
+            errorHist.addLast(timestamp);
+            if (errorHist.size() > waitMaxCount) {
+                errorHist.removeFirst();
+            }
+        }
+
+        public void clearErrorHistory() {
+            errorHist.clear();
+        }
+
+        public boolean enableReconnection(long timestamp) {
+            int size = errorHist.size();
+            if (size == 0) {
+                return true;
+            }
+
+            double suppressSec;
+            if (size < waitMaxCount) {
+                suppressSec = wait * Math.pow(waitIncrRate, size - 1);
+            } else {
+                suppressSec = waitMax;
+            }
+
+            return (! (timestamp - errorHist.getLast() < suppressSec));
         }
     }
 
@@ -68,6 +133,8 @@ public class Sender {
 
     private ByteBuffer pendings;
 
+    private ExponentialDelayReconnection reconnector;
+
     public Sender(String tag) {
         this(tag, "localhost", 24224);
     }
@@ -79,10 +146,11 @@ public class Sender {
     public Sender(String tagPrefix, String host, int port, int timeout, int bufferCapacity) {
         this.tagPrefix = tagPrefix;
         msgpack = new MessagePack();
+        pendings = ByteBuffer.allocate(bufferCapacity);
         server = new InetSocketAddress(host, port);
         name = String.format("%s_%s_%d", new Object[] { tagPrefix, host, port });
+        reconnector = new ExponentialDelayReconnection();
         open();
-        pendings = ByteBuffer.allocate(bufferCapacity);
     }
 
     public String getName() {
@@ -100,11 +168,17 @@ public class Sender {
     }
 
     private void connect() throws IOException {
-        socket = new Socket();
-        socket.connect(server);
-        // the timeout value to be used in milliseconds
-        socket.setSoTimeout(timeout);
-        out = new BufferedOutputStream(socket.getOutputStream());
+        try {
+            socket = new Socket();
+            socket.connect(server);
+            // the timeout value to be used in milliseconds
+            socket.setSoTimeout(timeout);
+            out = new BufferedOutputStream(socket.getOutputStream());
+            reconnector.clearErrorHistory();
+        } catch (IOException e) {
+            reconnector.addErrorHistory(System.currentTimeMillis());
+            throw e;
+        }
     }
 
     private void reconnect() throws IOException {
@@ -115,6 +189,14 @@ public class Sender {
     }
 
     public void close() {
+        int pos = pendings.position();
+        if (pos > 0) {
+            byte[] b = new byte[pos];
+            pendings.get(b, 0, pos);
+            send(b);
+        }
+
+        // close output stream
         if (out != null) {
             try {
                 out.close();
@@ -123,6 +205,8 @@ public class Sender {
                 out = null;
             }
         }
+
+        // close socket
         if (socket != null) {
             try {
                 socket.close();
@@ -134,27 +218,19 @@ public class Sender {
     }
 
     public void emit(String label, Map<String, String> data) {
-        String tag = tagPrefix + "." + label;
-        long timestamp = System.currentTimeMillis();
+        // create event
+        Event event = new Event(tagPrefix + "." + label, System.currentTimeMillis(), data);
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("Create event=[tag=%s,curtime=%d,data=%s]",
-                    new Object[] { tag, timestamp, data.toString() }));
+        if (LOG.isDebugEnabled()) { // for debug
+            LOG.debug(String.format("Created %s", new Object[] { event }));
         }
 
-        Event event = null;
         byte[] bytes = null;
         try {
-            // create event
-            event = new Event();
-            event.tag = tag;
-            event.timestamp = timestamp;
-            event.data = data;
-
             // serialize tag, timestamp and data
             bytes = msgpack.write(event);
         } catch (IOException e) {
-            LOG.error("Cannot serialize data: " + event, e);
+            LOG.error("Cannot serialize event: " + event, e);
         }
 
         // send serialized data
@@ -164,35 +240,47 @@ public class Sender {
     }
 
     private synchronized void send(byte[] bytes) {
-        // check pending buffer
-        int pos = pendings.position();
-        if (pos > 0) {
-            byte[] b = new byte[pos + bytes.length];
-            pendings.get(b, 0, pos);
-            System.arraycopy(b, pos, bytes, 0, bytes.length);
-            bytes = b;
-        }
+        // buffering
+        appendBuffer(bytes);
 
         try {
+            // suppress reconnection burst
+            if (!reconnector.enableReconnection(System.currentTimeMillis())) {
+                return;
+            }
+
             // check whether connection is established or not
             reconnect();
 
-            out.write(bytes);
+            // write data
+            out.write(getBuffer());
             out.flush();
-            pendings.clear();
-        } catch (IOException e) {
-            // check overflow of pending buffer
-            if (bytes.length > pendings.capacity()) {
-                LOG.error("FluentLogger: Cannot send logs to " + getName(), e);
-                pendings.clear();
-            } else {
-                pendings.clear();
-                pendings.put(bytes);
-            }
 
+            clearBuffer();
+        } catch (IOException e) {
             // close socket
             close();
         }
+    }
+
+    private void appendBuffer(byte[] bytes) {
+        if (pendings.position() + bytes.length > pendings.capacity()) {
+            LOG.error("FluentLogger: Cannot send logs to " + getName());
+            pendings.clear();
+        }
+        pendings.put(bytes);
+    }
+
+    private byte[] getBuffer() {
+        int len = pendings.position();
+        pendings.position(0);
+        byte[] ret = new byte[len];
+        pendings.get(ret, 0, len);
+        return ret;
+    }
+
+    private void clearBuffer() {
+        pendings.clear();
     }
 
     // TODO: main method must be deleted later
