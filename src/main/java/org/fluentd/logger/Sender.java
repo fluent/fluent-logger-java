@@ -148,7 +148,7 @@ public class Sender {
         msgpack = new MessagePack();
         pendings = ByteBuffer.allocate(bufferCapacity);
         server = new InetSocketAddress(host, port);
-        name = String.format("%s_%s_%d", new Object[] { tagPrefix, host, port });
+        name = String.format("%s_%s_%d_%d_%d", new Object[] { tagPrefix, host, port, timeout, bufferCapacity });
         reconnector = new ExponentialDelayReconnection();
         open();
     }
