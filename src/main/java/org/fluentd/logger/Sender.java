@@ -6,22 +6,44 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.msgpack.MessagePack;
+import org.msgpack.annotation.Message;
 import org.slf4j.LoggerFactory;
 
 
 public class Sender {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Sender.class);
 
+    @Message
+    public static class Event {
+        public String tag;
+
+        public long timestamp;
+
+        public Map<String, String> data;
+
+        public Event() {
+        }
+
+        @Override
+        public String toString() {
+            return String.format("Event[tag=%s,timestamp=%d,data=%s]",
+        	    new Object[] { tag, timestamp, data.toString() });
+        }
+    }
+
     private MessagePack msgpack;
 
-    private String tag;
+    private String tagPrefix;
 
     private SocketAddress server;
 
     private Socket socket;
+
+    private String name;
 
     private int timeout;
 
@@ -32,20 +54,32 @@ public class Sender {
     public Sender(String tag) throws IOException {
 	this(tag, "localhost", 24224);
     }
+
     public Sender(String tag, String host, int port) throws IOException {
-	this(tag, host, port, 3 * 1000, 1 * 1024 * 1024);
+	this(tag, host, port, 3 * 1000, 8 * 1024 * 1024);
     }
 
-    public Sender(String tag, String host, int port, int timeout, int bufferCapacity) {
-	this.tag = tag;
+    public Sender(String tagPrefix, String host, int port, int timeout, int bufferCapacity) {
+	this.tagPrefix = tagPrefix;
 	msgpack = new MessagePack();
 	server = new InetSocketAddress(host, port);
+	name = String.format("%s_%s_%d", new Object[] { tagPrefix, host, port });
+	open();
+	pendings = ByteBuffer.allocate(bufferCapacity);
+    }
+
+    public String getName() {
+	return name;
+    }
+
+    private void open() {
 	try {
 	    connect();
 	} catch (IOException e) {
+	    LOG.error("Failed to connect fluentd: " + getName(), e);
+	    LOG.error("Connection will be retried");
 	    close();
 	}
-	pendings = ByteBuffer.allocate(bufferCapacity);
     }
 
     private void connect() throws IOException {
@@ -56,11 +90,7 @@ public class Sender {
     }
 
     private void reconnect() throws IOException {
-	// expt reconnection
-	if (socket.isClosed()) {
-	    socket = null;
-	    connect();
-	} else if (! socket.isConnected()) {
+	if (socket.isClosed() || (! socket.isConnected())) {
 	    close();
 	    connect();
 	}
@@ -85,29 +115,37 @@ public class Sender {
 	}
     }
 
-    public void emit(String label, Map<String, String> data) throws IOException {
-	String tagName = tag + "." + label;
-	long currentTime = System.currentTimeMillis();
+    public void emit(String label, Map<String, String> data) {
+	String tag = tagPrefix + "." + label;
+	long timestamp = System.currentTimeMillis();
 
 	if (LOG.isDebugEnabled()) {
 	    LOG.debug(String.format("Create event=[tag=%s,curtime=%d,data=%s]",
-		    new Object[] { tagName, currentTime, data.toString() }));
+		    new Object[] { tag, timestamp, data.toString() }));
 	}
 
-	// create event
-	Event event = new Event();
-	event.tagName = tagName;
-	event.currentTime = currentTime;
-	event.data = data;
+	Event event = null;
+	byte[] bytes = null;
+	try {
+	    // create event
+	    event = new Event();
+	    event.tag = tag;
+	    event.timestamp = timestamp;
+	    event.data = data;
 
-	// serialize tagName, currentTime and data
-        byte[] bytes = msgpack.write(event);
+	    // serialize tag, timestamp and data
+	    bytes = msgpack.write(event);
+	} catch (IOException e) {
+	    LOG.error("Cannot serialize data: " + event, e);
+	}
 
-        // send serialized data
-        send(bytes);
+	// send serialized data
+	if (bytes != null) {
+	    send(bytes);
+	}
     }
 
-    private synchronized void send(byte[] bytes) throws IOException {
+    private synchronized void send(byte[] bytes) {
 	// check pending buffer
 	int pos = pendings.position();
 	if (pos > 0) {
@@ -125,16 +163,31 @@ public class Sender {
 	    out.flush();
 	    pendings.clear();
 	} catch (IOException e) {
-	    // close socket
-	    close();
-
-	    // check size of pending buffer
+	    // check overflow of pending buffer
 	    if (bytes.length > pendings.capacity()) {
+		LOG.error("FluentLogger: Cannot send logs to " + getName(), e);
 		pendings.clear();
 	    } else {
 		pendings.clear();
 		pendings.put(bytes);
 	    }
+
+	    // close socket
+	    close();
 	}
+    }
+
+    // TODO: main method must be deleted later
+    public static void main(String[] args) throws Exception {
+	Sender sender = new Sender("tag", "localhost", 24224);
+	Map<String, String> data = new HashMap<String, String>();
+	data.put("t1k1", "t1v1");
+	data.put("t1k2", "t1v2");
+	sender.emit("label1", data);
+
+	Map<String, String> data2 = new HashMap<String, String>();
+	data2.put("t2k1", "t2v1");
+	data2.put("t2k2", "t2v2");
+	sender.emit("label2", data2);
     }
 }
