@@ -32,7 +32,7 @@ import org.msgpack.annotation.Message;
 import org.slf4j.LoggerFactory;
 
 
-public class Sender {
+class Sender {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Sender.class);
 
     @Message
