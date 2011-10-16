@@ -25,7 +25,7 @@ Install
   * Install with all-in-one jar file
     You can download all-in-one jar file for Fluent Logger for Java.
 
-    $ wget http://.../fluent-logger-${fluent.version}-jar-with-dependencies.jar
+    $ wget http://fluentd.org/fluent-logger-${fluent.version}-jar-with-dependencies.jar
 
     To use Fluent Logger for Java, set the above jar file to your classpath.
 
@@ -51,7 +51,7 @@ Install
       </repository>
     <repositories>
 
-  * Install from GitHub repository
+  * Install from Github repository
     You can get latest source code using git.
 
     $ git clone git@github.com:fluent/fluent-logger-java.git
