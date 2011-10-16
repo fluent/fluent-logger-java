@@ -17,6 +17,7 @@
 //
 package org.fluentd.logger;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -51,6 +52,12 @@ public class FluentLogger {
     }
 
     public void log(String label, Map<String, String> data) {
+        sender.emit(label, data);
+    }
+
+    public void log(String label, String key, String value) {
+        Map<String, String> data = new HashMap<String, String>();
+        data.put(key, value);
         sender.emit(label, data);
     }
 
