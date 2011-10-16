@@ -62,7 +62,7 @@ class Sender {
     /**
      * Calcurate exponential delay for reconnecting
      */
-    private static class ExponentialDelayReconnection {
+    private static class ExponentialDelayReconnector {
         private double wait = 0.5;
 
         private double waitIncrRate = 1.5;
@@ -73,7 +73,7 @@ class Sender {
 
         private LinkedList<Long> errorHist;
 
-        public ExponentialDelayReconnection() {
+        public ExponentialDelayReconnector() {
             waitMaxCount = getWaitMaxCount();
             errorHist = new LinkedList<Long>();
         }
@@ -119,8 +119,6 @@ class Sender {
 
     private MessagePack msgpack;
 
-    private String tagPrefix;
-
     private SocketAddress server;
 
     private Socket socket;
@@ -131,25 +129,26 @@ class Sender {
 
     private BufferedOutputStream out;
 
+    // TODO: in next version, pending buffer should be implemented
+    // with MessagePackBufferPacker.
     private ByteBuffer pendings;
 
-    private ExponentialDelayReconnection reconnector;
+    private ExponentialDelayReconnector reconnector;
 
-    public Sender(String tag) {
-        this(tag, "localhost", 24224);
+    Sender() {
+        this("localhost", 24224);
     }
 
-    public Sender(String tag, String host, int port) {
-        this(tag, host, port, 3 * 1000, 8 * 1024 * 1024);
+    Sender(String host, int port) {
+        this(host, port, 3 * 1000, 8 * 1024 * 1024);
     }
 
-    public Sender(String tagPrefix, String host, int port, int timeout, int bufferCapacity) {
-        this.tagPrefix = tagPrefix;
+    Sender(String host, int port, int timeout, int bufferCapacity) {
         msgpack = new MessagePack();
         pendings = ByteBuffer.allocate(bufferCapacity);
         server = new InetSocketAddress(host, port);
-        name = String.format("%s_%s_%d_%d_%d", new Object[] { tagPrefix, host, port, timeout, bufferCapacity });
-        reconnector = new ExponentialDelayReconnection();
+        name = String.format("%s_%d_%d_%d", new Object[] { host, port, timeout, bufferCapacity });
+        reconnector = new ExponentialDelayReconnector();
         open();
     }
 
@@ -182,19 +181,23 @@ class Sender {
     }
 
     private void reconnect() throws IOException {
-        if (socket.isClosed() || (!socket.isConnected())) {
+        if (socket == null) {
+            connect();
+        } else if (socket.isClosed() || (!socket.isConnected())) {
             close();
             connect();
         }
     }
 
     public void close() {
+        /** FIXME
         int pos = pendings.position();
         if (pos > 0) {
             byte[] b = new byte[pos];
             pendings.get(b, 0, pos);
             send(b);
         }
+         */
 
         // close output stream
         if (out != null) {
@@ -217,10 +220,15 @@ class Sender {
         }
     }
 
-    public void emit(String label, Map<String, String> data) {
-        // create event
-        Event event = new Event(tagPrefix + "." + label, System.currentTimeMillis(), data);
+    public void emit(String tag, Map<String, String> data) {
+        emit(new Event(tag, System.currentTimeMillis(), data));
+    }
 
+    void emit(String tag, long timestamp, Map<String, String> data) {
+        emit(new Event(tag, timestamp, data));
+    }
+
+    private void emit(Event event) {
         if (LOG.isDebugEnabled()) { // for debug
             LOG.debug(String.format("Created %s", new Object[] { event }));
         }
@@ -236,7 +244,7 @@ class Sender {
         // send serialized data
         if (bytes != null) {
             send(bytes);
-        }
+        }        
     }
 
     private synchronized void send(byte[] bytes) {
@@ -263,7 +271,7 @@ class Sender {
         }
     }
 
-    private void appendBuffer(byte[] bytes) {
+    void appendBuffer(byte[] bytes) {
         if (pendings.position() + bytes.length > pendings.capacity()) {
             LOG.error("FluentLogger: Cannot send logs to " + getName());
             pendings.clear();
@@ -271,7 +279,7 @@ class Sender {
         pendings.put(bytes);
     }
 
-    private byte[] getBuffer() {
+    byte[] getBuffer() {
         int len = pendings.position();
         pendings.position(0);
         byte[] ret = new byte[len];
@@ -279,21 +287,21 @@ class Sender {
         return ret;
     }
 
-    private void clearBuffer() {
+    void clearBuffer() {
         pendings.clear();
     }
 
     // TODO: main method must be deleted later
     public static void main(String[] args) throws Exception {
-        Sender sender = new Sender("tag", "localhost", 24224);
+        Sender sender = new Sender("localhost", 24224);
         Map<String, String> data = new HashMap<String, String>();
         data.put("t1k1", "t1v1");
         data.put("t1k2", "t1v2");
-        sender.emit("label1", data);
+        sender.emit("tag.label1", data);
 
         Map<String, String> data2 = new HashMap<String, String>();
         data2.put("t2k1", "t2v1");
         data2.put("t2k2", "t2v2");
-        sender.emit("label2", data2);
+        sender.emit("tag.label2", data2);
     }
 }

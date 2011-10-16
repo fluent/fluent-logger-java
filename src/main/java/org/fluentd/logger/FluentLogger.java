@@ -35,7 +35,7 @@ public class FluentLogger {
     }
 
     public static synchronized FluentLogger getLogger(String tag, String host, int port, int timeout, int bufferCapacity) {
-        String key = String.format("%s_%s_%d_%d_%d", new Object[] { tag, host, port, timeout, bufferCapacity });
+        String key = String.format("%s_%d_%d_%d", new Object[] { host, port, timeout, bufferCapacity });
         if (loggers.containsKey(key)) {
             return loggers.get(key);
         } else {
@@ -45,20 +45,23 @@ public class FluentLogger {
         }
     }
 
+    private String tagPrefix;
+
     private Sender sender;
 
     private FluentLogger(String tag, String host, int port, int timeout, int bufferCapacity) {
-        sender = new Sender(tag, host, port, timeout, bufferCapacity);
+        tagPrefix = tag;
+        sender = new Sender(host, port, timeout, bufferCapacity);
     }
 
     public void log(String label, Map<String, String> data) {
-        sender.emit(label, data);
+        sender.emit(tagPrefix + "." + label, data);
     }
 
     public void log(String label, String key, String value) {
         Map<String, String> data = new HashMap<String, String>();
         data.put(key, value);
-        sender.emit(label, data);
+        sender.emit(tagPrefix + "." + label, data);
     }
 
     @Override
