@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.fluentd</groupId>
   <artifactId>fluent-logger</artifactId>
-  <name>A structured logger for Fluent</name>
+  <name>Fluent Logger for Java</name>
   <description>Java implementation of structured logger for Fluent.</description>
   <version>0.1.0</version>
   <packaging>jar</packaging>
@@ -20,7 +20,7 @@
   <scm>
     <connection>scm:git:git://github.com/fluent/fluent-logger-java.git</connection>
     <developerConnection>scm:git:git@github.com:fluent/fluent-logger-java.git</developerConnection>
-    <url>scm:git:git://github.com/fluent/fluent-java.git</url>
+    <url>scm:git:git://github.com/fluent/fluent-logger-java.git</url>
   </scm>
 
   <developers>
