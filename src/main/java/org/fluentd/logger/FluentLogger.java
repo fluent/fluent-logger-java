@@ -53,4 +53,11 @@ public class FluentLogger {
     public void log(String label, Map<String, String> data) {
         sender.emit(label, data);
     }
+
+    @Override
+    public void finalize() {
+        if (sender != null) {
+            sender.close();
+        }
+    }
 }
