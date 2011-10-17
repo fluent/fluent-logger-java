@@ -147,7 +147,7 @@ class Sender {
         msgpack = new MessagePack();
         pendings = ByteBuffer.allocate(bufferCapacity);
         server = new InetSocketAddress(host, port);
-        name = String.format("%s_%d_%d_%d", new Object[] { host, port, timeout, bufferCapacity });
+        name = String.format("%s_%d", new Object[] { host, port });
         reconnector = new ExponentialDelayReconnector();
         open();
     }
@@ -190,15 +190,6 @@ class Sender {
     }
 
     public void close() {
-        /** FIXME
-        int pos = pendings.position();
-        if (pos > 0) {
-            byte[] b = new byte[pos];
-            pendings.get(b, 0, pos);
-            send(b);
-        }
-         */
-
         // close output stream
         if (out != null) {
             try {
