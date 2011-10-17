@@ -25,7 +25,7 @@ Install
   * Install with all-in-one jar file
     You can download all-in-one jar file for Fluent Logger for Java.
 
-    $ wget http://fluentd.org/fluent-logger-${fluent.version}-jar-with-dependencies.jar
+    $ wget http://fluentd.org/releases/java/fluent-logger-${fluent.version}-jar-with-dependencies.jar
 
     To use Fluent Logger for Java, set the above jar file to your classpath.
 
@@ -88,9 +88,10 @@ Quickstart
   }
 
   To create Fluent Logger instances, users need to invoke getLogger method in 
-  FluentLogger class like org.slf4j, org.log4j libraries.  The method should be 
-  called only once.  By default, the logger assumes fluent daemon is launched 
-  locally.  You can also specify remote logger by passing the following options.  
+  FluentLogger class like org.slf4j, org.log4j logging libraries.  The method 
+  should be called only once.  By default, the logger assumes fluent daemon is 
+  launched locally.  You can also specify remote logger by passing the following 
+  options.  
 
   // for remote fluentd
   private static FluentLogger LOG = FluentLogger.getLogger("app", "remotehost", port);
