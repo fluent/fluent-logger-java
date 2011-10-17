@@ -4,17 +4,17 @@
 
 Overview
 --------
-  Many web/mobile applications generate huge amount of event logs (c,f. login, 
-  logout, purchase, follow, etc). To analyze these event logs could be really 
-  valuable for improving the service. However, the challenge is collecting these
-  logs easily and reliably.
+  Many web/mobile applications generate huge amount of event logs (c,f. login,
+  logout, purchase, follow, etc).  Analyzing these event logs can be quite
+  valuable for improving services.  However, collecting these logs easily and 
+  reliably is a challenging task.
 
-  Fluent solves that problem by having: easy installation, small footprint, 
-  plugins, reliable buffering, log forwarding, etc.
+  Fluent solves the problem by having: easy installation, small footprint, plugins
+  reliable buffering, log forwarding, etc.
 
   * Fluent website: http://github.com/fluent/fluent
 
-  fluent-logger-java is a Java library, to record the events from Java application.
+  fluent-logger-java is a Java library, to record events from Java application.
 
 Requirements
 ------------
@@ -58,8 +58,8 @@ Install
     $ cd fluent-logger-java
     $ mvn assembly:assembly
 
-    Then you'll get the fluent jar file in fluent-logger-java/target directory.
-    The file name is fluent-logger-${fluent.version}-jar-with-dependencies.jar.  
+    You will get the fluent logger jar file in fluent-logger-java/target 
+    directory.  File name will be fluent-logger-${fluent.version}-jar-with-dependencies.jar.
     For more detail, see pom.xml.
 
   Replace ${fluent.version} with the current version of Fluent Logger for Java.
