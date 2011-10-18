@@ -63,8 +63,8 @@ You will get the fluent logger jar file in fluent-logger-java/target
 directory.  File name will be fluent-logger-${fluent.version}-jar-with-dependencies.jar.
 For more detail, see pom.xml.
 
-Replace ${fluent.version} with the current version of Fluent Logger for Java.
-The current version is 0.1.0.  
+**Replace ${fluent.version} with the current version of Fluent Logger for Java.**
+**The current version is 0.1.0.**  
 
 ## Quickstart
 
