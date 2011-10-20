@@ -19,12 +19,11 @@ package org.fluentd.logger;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 
 public class FluentLogger {
 
-    private static Map<String, FluentLogger> loggers = new WeakHashMap<String, FluentLogger>();
+    private static Map<String, FluentLogger> loggers = new HashMap<String, FluentLogger>();
 
     public static FluentLogger getLogger(String tag) {
         return getLogger(tag, "localhost", 24224);
@@ -42,6 +41,14 @@ public class FluentLogger {
             FluentLogger logger = new FluentLogger(tag, host, port, timeout, bufferCapacity);
             loggers.put(key, logger);
             return logger;
+        }
+    }
+
+    public static synchronized void closeLoggers() {
+        for (FluentLogger logger : loggers.values()) {
+            if (logger != null) {
+                logger.close();
+            }
         }
     }
 
@@ -64,8 +71,7 @@ public class FluentLogger {
         sender.emit(tagPrefix + "." + label, data);
     }
 
-    @Override
-    public void finalize() {
+    private void close() {
         if (sender != null) {
             sender.close();
         }
