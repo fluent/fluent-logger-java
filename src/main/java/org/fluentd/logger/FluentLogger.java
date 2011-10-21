@@ -34,7 +34,7 @@ public class FluentLogger {
     }
 
     public static synchronized FluentLogger getLogger(String tag, String host, int port, int timeout, int bufferCapacity) {
-        String key = String.format("%s_%d_%d_%d", new Object[] { host, port, timeout, bufferCapacity });
+        String key = String.format("%s_%s_%d_%d_%d", new Object[] { tag, host, port, timeout, bufferCapacity });
         if (loggers.containsKey(key)) {
             return loggers.get(key);
         } else {
@@ -44,11 +44,9 @@ public class FluentLogger {
         }
     }
 
-    public static synchronized void closeLoggers() {
+    public static synchronized void close() {
         for (FluentLogger logger : loggers.values()) {
-            if (logger != null) {
-                logger.close();
-            }
+            logger.close0();
         }
     }
 
@@ -71,9 +69,10 @@ public class FluentLogger {
         sender.emit(tagPrefix + "." + label, data);
     }
 
-    private void close() {
+    private void close0() {
         if (sender != null) {
             sender.close();
+            sender = null;
         }
     }
 }
