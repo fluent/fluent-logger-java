@@ -28,14 +28,18 @@ import java.util.LinkedList;
 import java.util.Map;
 
 import org.msgpack.MessagePack;
+import org.msgpack.MessageTypeException;
 import org.msgpack.annotation.Message;
+import org.msgpack.packer.Packer;
+import org.msgpack.template.AbstractTemplate;
+import org.msgpack.template.Templates;
+import org.msgpack.unpacker.Unpacker;
 import org.slf4j.LoggerFactory;
 
 
 class Sender {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Sender.class);
 
-    @Message
     public static class Event {
         public String tag;
 
@@ -54,8 +58,62 @@ class Sender {
 
         @Override
         public String toString() {
-            return String.format("Event[tag=%s,timestamp=%d,data=%s]",
+            return String.format("Event { tag=%s, timestamp=%d, data=%s }",
                     new Object[] { tag, timestamp, data.toString() });
+        }
+    }
+
+    public static class EventTemplate extends AbstractTemplate<Event> {
+        static EventTemplate INSTANCE = new EventTemplate();
+
+        public void write(Packer pk, Event v, boolean required) throws IOException {
+            if (v == null) {
+                if (required) {
+                    throw new MessageTypeException("Attempted to write null");
+                }
+                pk.writeNil();
+                return;
+            }
+
+            pk.writeArrayBegin(3);
+            {
+                Templates.TString.write(pk, v.tag, required);
+                Templates.TLong.write(pk, v.timestamp, required);
+                pk.writeMapBegin(v.data.size());
+                {
+                    for (Map.Entry<String, String> e : v.data.entrySet()) {
+                        Templates.TString.write(pk, e.getKey(), required);
+                        Templates.TString.write(pk, e.getValue(), required);
+                    }
+                }
+                pk.writeMapEnd();
+            }
+            pk.writeArrayEnd();
+        }
+
+        public Event read(Unpacker u, Event to, boolean required) throws IOException {
+            if (!required && u.trySkipNil()) {
+                return null;
+            }
+
+            to = new Event();
+            u.readArrayBegin();
+            {
+                to.tag = Templates.TString.read(u, null, required);
+                to.timestamp = Templates.TLong.read(u, null, required);
+                int size = u.readMapBegin();
+                to.data = new HashMap<String, String>(size);
+                {
+                    for (int i = 0; i < size; i++) {
+                        String key = Templates.TString.read(u, null, required);
+                        String value = Templates.TString.read(u, null, required);
+                        to.data.put(key, value);
+                    }
+                }
+                u.readMapEnd();
+            }
+            u.readArrayEnd();
+            return to;
         }
     }
 
@@ -71,11 +129,11 @@ class Sender {
 
         private int waitMaxCount;
 
-        private LinkedList<Long> errorHist;
+        private LinkedList<Long> errorHistory;
 
         public ExponentialDelayReconnector() {
             waitMaxCount = getWaitMaxCount();
-            errorHist = new LinkedList<Long>();
+            errorHistory = new LinkedList<Long>();
         }
 
         private int getWaitMaxCount() {
@@ -90,18 +148,18 @@ class Sender {
         }
 
         public void addErrorHistory(long timestamp) {
-            errorHist.addLast(timestamp);
-            if (errorHist.size() > waitMaxCount) {
-                errorHist.removeFirst();
+            errorHistory.addLast(timestamp);
+            if (errorHistory.size() > waitMaxCount) {
+                errorHistory.removeFirst();
             }
         }
 
         public void clearErrorHistory() {
-            errorHist.clear();
+            errorHistory.clear();
         }
 
         public boolean enableReconnection(long timestamp) {
-            int size = errorHist.size();
+            int size = errorHistory.size();
             if (size == 0) {
                 return true;
             }
@@ -113,7 +171,7 @@ class Sender {
                 suppressSec = waitMax;
             }
 
-            return (! (timestamp - errorHist.getLast() < suppressSec));
+            return (! (timestamp - errorHistory.getLast() < suppressSec));
         }
     }
 
@@ -145,6 +203,7 @@ class Sender {
 
     Sender(String host, int port, int timeout, int bufferCapacity) {
         msgpack = new MessagePack();
+        msgpack.register(Sender.Event.class, Sender.EventTemplate.INSTANCE);
         pendings = ByteBuffer.allocate(bufferCapacity);
         server = new InetSocketAddress(host, port);
         name = String.format("%s_%d", new Object[] { host, port });
