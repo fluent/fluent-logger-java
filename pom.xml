@@ -5,7 +5,7 @@
   <artifactId>fluent-logger</artifactId>
   <name>Fluent Logger for Java</name>
   <description>Java implementation of structured logger for Fluent.</description>
-  <version>0.2.0-SNAPSHOT</version>
+  <version>0.2.0</version>
   <packaging>jar</packaging>
   <url>https://github.com/fluent/fluent-logger-java</url>
 
@@ -30,6 +30,21 @@
     	<email>muga.nishizawa@gmail.com</email>
     </developer>
   </developers>
+
+  <distributionManagement>
+      <repository>
+          <uniqueVersion>false</uniqueVersion>
+          <id>msgpack.org</id>
+          <name>Repository at msgpack.org</name>
+          <url>file://${project.build.directory}/../maven2/</url>
+      </repository>
+      <snapshotRepository>
+          <uniqueVersion>true</uniqueVersion>
+          <id>msgpack.org</id>
+          <name>Repository at msgpack.org</name>
+          <url>file://${project.build.directory}/../maven2/</url>
+      </snapshotRepository>
+  </distributionManagement>
 
   <dependencies>
     <dependency>
