@@ -24,7 +24,7 @@ Java >= 1.6
 
 You can download all-in-one jar file for Fluent Logger for Java.
 
-    $ wget [http://fluentd.org/releases/java/fluent-logger-${fluent.version}-jar-with-dependencies.jar](http://fluentd.org/releases/java/fluent-logger-${fluent.version}-jar-with-dependencies.jar)
+    $ wget [http://fluentd.org/releases/java/fluent-logger-${logger.version}-jar-with-dependencies.jar](http://fluentd.org/releases/java/fluent-logger-${logger.version}-jar-with-dependencies.jar)
 
 To use Fluent Logger for Java, set the above jar file to your classpath.
 
@@ -38,7 +38,7 @@ configure your pom.xml as follows to use it:
       <dependency>
         <groupId>org.fluentd</groupId>
         <artifactId>fluent-logger</artifactId>
-        <version>${fluent.version}</version>
+        <version>${logger.version}</version>
       </dependency>
       ...
     </dependencies>
@@ -60,11 +60,11 @@ You can get latest source code using git.
     $ mvn assembly:assembly
 
 You will get the fluent logger jar file in fluent-logger-java/target 
-directory.  File name will be fluent-logger-${fluent.version}-jar-with-dependencies.jar.
+directory.  File name will be fluent-logger-${logger.version}-jar-with-dependencies.jar.
 For more detail, see pom.xml.
 
-**Replace ${fluent.version} with the current version of Fluent Logger for Java.**
-**The current version is 0.1.0.**  
+**Replace ${logger.version} with the current version of Fluent Logger for Java.**
+**The current version is 0.2.0.**  
 
 ## Quickstart
 
@@ -96,8 +96,13 @@ options.
   // for remote fluentd
   private static FluentLogger LOG = FluentLogger.getLogger("app", "remotehost", port);
 
-  Then, please create the events like this.  This will send the event to fluentd, 
-  with tag 'app.follow' and the attributes 'from' and 'to'.
+Then, please create the events like this.  This will send the event to fluentd, 
+with tag 'app.follow' and the attributes 'from' and 'to'.
+
+Close method in FluentLogger class should be called explicitly when application 
+is finished.  The method close socket connection with the fluentd.
+
+  FluentLogger.close();
 
 ## License
 
