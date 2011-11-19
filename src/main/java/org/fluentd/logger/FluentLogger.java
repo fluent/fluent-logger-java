@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-
 public class FluentLogger {
 
     private static Map<String, FluentLogger> loggers = new WeakHashMap<String, FluentLogger>();
@@ -34,12 +33,15 @@ public class FluentLogger {
         return getLogger(tag, host, port, 3 * 1000, 1 * 1024 * 1024);
     }
 
-    public static synchronized FluentLogger getLogger(String tag, String host, int port, int timeout, int bufferCapacity) {
-        String key = String.format("%s_%s_%d_%d_%d", new Object[] { tag, host, port, timeout, bufferCapacity });
+    public static synchronized FluentLogger getLogger(
+            String tag, String host, int port, int timeout, int bufferCapacity) {
+        String key = String.format("%s_%s_%d_%d_%d",
+                new Object[] { tag, host, port, timeout, bufferCapacity });
         if (loggers.containsKey(key)) {
             return loggers.get(key);
         } else {
-            FluentLogger logger = new FluentLogger(tag, host, port, timeout, bufferCapacity);
+            FluentLogger logger =
+                new FluentLogger(tag, host, port, timeout, bufferCapacity);
             loggers.put(key, logger);
             return logger;
         }

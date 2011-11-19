@@ -29,16 +29,15 @@ import java.util.Map;
 
 import org.msgpack.MessagePack;
 import org.msgpack.MessageTypeException;
-import org.msgpack.annotation.Message;
 import org.msgpack.packer.Packer;
 import org.msgpack.template.AbstractTemplate;
 import org.msgpack.template.Templates;
 import org.msgpack.unpacker.Unpacker;
 import org.slf4j.LoggerFactory;
 
-
 class Sender {
-    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Sender.class);
+    private static final org.slf4j.Logger LOG = LoggerFactory
+            .getLogger(Sender.class);
 
     public static class Event {
         public String tag;
@@ -66,7 +65,8 @@ class Sender {
     public static class EventTemplate extends AbstractTemplate<Event> {
         static EventTemplate INSTANCE = new EventTemplate();
 
-        public void write(Packer pk, Event v, boolean required) throws IOException {
+        public void write(Packer pk, Event v, boolean required)
+                throws IOException {
             if (v == null) {
                 if (required) {
                     throw new MessageTypeException("Attempted to write null");
@@ -91,7 +91,8 @@ class Sender {
             pk.writeArrayEnd();
         }
 
-        public Event read(Unpacker u, Event to, boolean required) throws IOException {
+        public Event read(Unpacker u, Event to, boolean required)
+                throws IOException {
             if (!required && u.trySkipNil()) {
                 return null;
             }
@@ -171,7 +172,7 @@ class Sender {
                 suppressSec = waitMax;
             }
 
-            return (! (timestamp - errorHistory.getLast() < suppressSec));
+            return (!(timestamp - errorHistory.getLast() < suppressSec));
         }
     }
 
@@ -294,7 +295,7 @@ class Sender {
         // send serialized data
         if (bytes != null) {
             send(bytes);
-        }        
+        }
     }
 
     private synchronized void send(byte[] bytes) {
