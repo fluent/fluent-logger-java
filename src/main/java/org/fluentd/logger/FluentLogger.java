@@ -21,6 +21,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import org.fluentd.logger.sender.RawSocketSender;
+import org.fluentd.logger.sender.Sender;
+
 public class FluentLogger {
 
     private static Map<String, FluentLogger> loggers = new WeakHashMap<String, FluentLogger>();
@@ -53,30 +56,51 @@ public class FluentLogger {
         }
     }
 
-    private String tagPrefix;
+    protected String tagPrefix;
 
-    private Sender sender;
+    protected Sender sender;
 
-    private FluentLogger(String tag, String host, int port, int timeout, int bufferCapacity) {
-        tagPrefix = tag;
-        sender = new Sender(host, port, timeout, bufferCapacity);
+    protected FluentLogger() {
     }
 
-    public void log(String label, Map<String, String> data) {
-        sender.emit(tagPrefix + "." + label, data);
+    protected FluentLogger(String tag, String host, int port, int timeout, int bufferCapacity) {
+        tagPrefix = tag;
+        sender = new RawSocketSender(host, port, timeout, bufferCapacity);
     }
 
     public void log(String label, String key, String value) {
-        Map<String, String> data = new HashMap<String, String>();
-        data.put(key, value);
-        sender.emit(tagPrefix + "." + label, data);
+        log(label, key, value, 0);
     }
 
-    private void close0() {
+    public void log(String label, String key, String value, long timestamp) {
+        Map<String, String> data = new HashMap<String, String>();
+        data.put(key, value);
+        log(label, data, timestamp);
+    }
+
+    public void log(String label, Map<String, String> data) {
+        log(label, data, 0);
+    }
+
+    public void log(String label, Map<String, String> data, long timestamp) {
+        if (timestamp != 0) {
+            sender.emit(tagPrefix + "." + label, timestamp, data);
+        } else {
+            sender.emit(tagPrefix + "." + label, data);
+        }
+    }
+
+    protected void close0() {
         if (sender != null) {
             sender.close();
             sender = null;
         }
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s{tagPrefix=%s,sender=%s}",
+                new Object[] { this.getClass().getName(), tagPrefix, sender.toString() });
     }
 
     @Override

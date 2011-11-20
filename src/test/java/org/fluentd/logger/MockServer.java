@@ -6,7 +6,6 @@ import java.net.Socket;
 
 import org.msgpack.MessagePack;
 
-
 public class MockServer extends Thread {
 
     public static interface MockProcess {
@@ -21,7 +20,7 @@ public class MockServer extends Thread {
 
     public MockServer(int port, MockProcess mockProcess) throws IOException {
         msgpack = new MessagePack();
-        msgpack.register(Sender.Event.class, Sender.EventTemplate.INSTANCE);
+        msgpack.register(Event.class, EventTemplate.INSTANCE);
         serverSocket = new ServerSocket(port);
         process = mockProcess;
     }
