@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.fluentd.logger.sender.Event;
 import org.junit.Test;
 import org.msgpack.MessagePack;
 import org.msgpack.unpacker.Unpacker;
@@ -23,7 +24,7 @@ public class TestFluentLoggerNormalOperation {
         int port = 24224;
 
         // start mock server
-        MockServer server = new MockServer(port, new MockServer.MockProcess() {
+        MockFluentd server = new MockFluentd(port, new MockFluentd.MockProcess() {
             public void process(MessagePack msgpack, Socket socket) throws IOException {
                 BufferedInputStream in = new BufferedInputStream(socket.getInputStream());
                 Unpacker unpacker = msgpack.createUnpacker(in);

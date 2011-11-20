@@ -7,10 +7,8 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.fluentd.logger.Event;
-import org.fluentd.logger.EventTemplate;
-import org.fluentd.logger.MockServer;
-import org.fluentd.logger.MockServer.MockProcess;
+import org.fluentd.logger.MockFluentd;
+import org.fluentd.logger.MockFluentd.MockProcess;
 import org.fluentd.logger.sender.RawSocketSender;
 import org.fluentd.logger.sender.Sender;
 import org.junit.Ignore;
@@ -67,7 +65,7 @@ public class TestSenderFluentdDownOperation {
         long timestamp = System.currentTimeMillis();
 
         // start mock server
-        MockServer server = new MockServer(port, new MockServer.MockProcess() {
+        MockFluentd server = new MockFluentd(port, new MockFluentd.MockProcess() {
             public void process(MessagePack msgpack, Socket socket) throws IOException {
                 System.out.println("server closing");
                 socket.close();

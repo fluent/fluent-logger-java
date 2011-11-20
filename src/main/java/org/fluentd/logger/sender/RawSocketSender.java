@@ -27,8 +27,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import org.fluentd.logger.Event;
-import org.fluentd.logger.EventTemplate;
 import org.msgpack.MessagePack;
 import org.slf4j.LoggerFactory;
 
