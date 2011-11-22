@@ -185,14 +185,14 @@ public class RawSocketSender implements Sender {
     }
 
     public void emit(String tag, Map<String, String> data) {
-        emit(new Event(tag, System.currentTimeMillis(), data));
+        emit(tag, System.currentTimeMillis(), data);
     }
 
     public void emit(String tag, long timestamp, Map<String, String> data) {
         emit(new Event(tag, timestamp, data));
     }
 
-    private void emit(Event event) {
+    protected void emit(Event event) {
         if (LOG.isDebugEnabled()) { // for debug
             LOG.debug(String.format("Created %s", new Object[] { event }));
         }

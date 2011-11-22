@@ -43,8 +43,8 @@ public class FluentLogger {
         if (loggers.containsKey(key)) {
             return loggers.get(key);
         } else {
-            FluentLogger logger =
-                new FluentLogger(tag, host, port, timeout, bufferCapacity);
+            FluentLogger logger = new FluentLogger(tag,
+                    new RawSocketSender(host, port, timeout, bufferCapacity));
             loggers.put(key, logger);
             return logger;
         }
@@ -63,9 +63,9 @@ public class FluentLogger {
     protected FluentLogger() {
     }
 
-    protected FluentLogger(String tag, String host, int port, int timeout, int bufferCapacity) {
+    protected FluentLogger(String tag, Sender sender) {
         tagPrefix = tag;
-        sender = new RawSocketSender(host, port, timeout, bufferCapacity);
+        this.sender = sender;
     }
 
     public void log(String label, String key, String value) {
