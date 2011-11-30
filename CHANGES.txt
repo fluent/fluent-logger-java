@@ -1,6 +1,14 @@
-Release 0.2.0 -
+Release 0.2.1 -
   NEW FEATURES
-    Pre-define EventTemplate class for serialization of Event objects
+    Changes FluentLogger API: log(String, Map<String, String>) to
+    log(String, Map<String, Object>).
+
+  IMPROVEMENTS
+    Refactors some classes under org.fluentd.logger.sender package.
+
+Release 0.2.0 - 2011/10/30
+  NEW FEATURES
+    Pre-defines EventTemplate class for serialization of Event objects.
 
   BUG FIXMES
 
