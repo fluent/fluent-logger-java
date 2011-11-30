@@ -24,12 +24,12 @@ public class Event {
 
     public long timestamp;
 
-    public Map<String, String> data;
+    public Map<String, Object> data;
 
     public Event() {
     }
 
-    public Event(String tag, long timestamp, Map<String, String> data) {
+    public Event(String tag, long timestamp, Map<String, Object> data) {
         this.tag = tag;
         this.timestamp = timestamp;
         this.data = data;

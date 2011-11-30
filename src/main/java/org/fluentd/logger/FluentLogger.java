@@ -68,21 +68,21 @@ public class FluentLogger {
         this.sender = sender;
     }
 
-    public void log(String label, String key, String value) {
+    public void log(String label, String key, Object value) {
         log(label, key, value, 0);
     }
 
-    public void log(String label, String key, String value, long timestamp) {
-        Map<String, String> data = new HashMap<String, String>();
+    public void log(String label, String key, Object value, long timestamp) {
+        Map<String, Object> data = new HashMap<String, Object>();
         data.put(key, value);
         log(label, data, timestamp);
     }
 
-    public void log(String label, Map<String, String> data) {
+    public void log(String label, Map<String, Object> data) {
         log(label, data, 0);
     }
 
-    public void log(String label, Map<String, String> data, long timestamp) {
+    public void log(String label, Map<String, Object> data, long timestamp) {
         if (timestamp != 0) {
             sender.emit(tagPrefix + "." + label, timestamp, data);
         } else {

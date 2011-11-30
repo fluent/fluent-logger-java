@@ -18,7 +18,6 @@
 package org.fluentd.logger.sender;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.msgpack.MessageTypeException;
@@ -30,8 +29,7 @@ import org.msgpack.unpacker.Unpacker;
 public class EventTemplate extends AbstractTemplate<Event> {
     public static EventTemplate INSTANCE = new EventTemplate();
 
-    public void write(Packer pk, Event v, boolean required)
-            throws IOException {
+    public void write(Packer pk, Event v, boolean required) throws IOException {
         if (v == null) {
             if (required) {
                 throw new MessageTypeException("Attempted to write null");
@@ -46,9 +44,14 @@ public class EventTemplate extends AbstractTemplate<Event> {
             Templates.TLong.write(pk, v.timestamp, required);
             pk.writeMapBegin(v.data.size());
             {
-                for (Map.Entry<String, String> e : v.data.entrySet()) {
-                    Templates.TString.write(pk, e.getKey(), required);
-                    Templates.TString.write(pk, e.getValue(), required);
+                for (Map.Entry<String, Object> entry : v.data.entrySet()) {
+                    Templates.TString.write(pk, entry.getKey(), required);
+                    try {
+                        pk.write(entry.getValue());
+                    } catch (MessageTypeException e) {
+                        String val = entry.getValue().toString();
+                        Templates.TString.write(pk, val, required);
+                    }
                 }
             }
             pk.writeMapEnd();
@@ -56,29 +59,7 @@ public class EventTemplate extends AbstractTemplate<Event> {
         pk.writeArrayEnd();
     }
 
-    public Event read(Unpacker u, Event to, boolean required)
-            throws IOException {
-        if (!required && u.trySkipNil()) {
-            return null;
-        }
-
-        to = new Event();
-        u.readArrayBegin();
-        {
-            to.tag = Templates.TString.read(u, null, required);
-            to.timestamp = Templates.TLong.read(u, null, required);
-            int size = u.readMapBegin();
-            to.data = new HashMap<String, String>(size);
-            {
-                for (int i = 0; i < size; i++) {
-                    String key = Templates.TString.read(u, null, required);
-                    String value = Templates.TString.read(u, null, required);
-                    to.data.put(key, value);
-                }
-            }
-            u.readMapEnd();
-        }
-        u.readArrayEnd();
-        return to;
+    public Event read(Unpacker u, Event to, boolean required) throws IOException {
+        throw new UnsupportedOperationException("Don't need the operation");
     }
 }
