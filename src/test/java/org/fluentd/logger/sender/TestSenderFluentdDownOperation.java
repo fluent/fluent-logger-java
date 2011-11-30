@@ -31,7 +31,7 @@ public class TestSenderFluentdDownOperation {
 
         // start senders
         Sender sender = new RawSocketSender("localhost", port);
-        Map<String, String> data = new HashMap<String, String>();
+        Map<String, Object> data = new HashMap<String, Object>();
         data.put("t1k1", "t1v1");
         data.put("t1k2", "t1v2");
         sender.emit("tag.label1", timestamp, data);
@@ -40,7 +40,7 @@ public class TestSenderFluentdDownOperation {
         byte[] bytes1 = packer.toByteArray();
         assertArrayEquals(bytes1, sender.getBuffer());
 
-        Map<String, String> data2 = new HashMap<String, String>();
+        Map<String, Object> data2 = new HashMap<String, Object>();
         data2.put("t2k1", "t2v1");
         data2.put("t2k2", "t2v2");
         sender.emit("tag.label2", timestamp, data2);
@@ -83,7 +83,7 @@ public class TestSenderFluentdDownOperation {
         // sleep a little bit
         Thread.sleep(1000);
 
-        Map<String, String> data = new HashMap<String, String>();
+        Map<String, Object> data = new HashMap<String, Object>();
         data.put("t1k1", "t1v1");
         data.put("t1k2", "t1v2");
         for (int i = 0; i < 3; ++i) {
@@ -95,7 +95,7 @@ public class TestSenderFluentdDownOperation {
         byte[] bytes1 = packer.toByteArray();
         assertArrayEquals(bytes1, sender.getBuffer());
 
-        Map<String, String> data2 = new HashMap<String, String>();
+        Map<String, Object> data2 = new HashMap<String, Object>();
         data2.put("t2k1", "t2v1");
         data2.put("t2k2", "t2v2");
         sender.emit("tag.label2", data2);
