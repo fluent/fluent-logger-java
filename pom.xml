@@ -46,11 +46,18 @@
       </snapshotRepository>
   </distributionManagement>
 
+  <repositories>
+    <repository>
+      <id>local-repo</id>
+      <url>file://${basedir}/mvn-local</url>
+    </repository>
+  </repositories>
+
   <dependencies>
     <dependency>
       <groupId>org.msgpack</groupId>
       <artifactId>msgpack</artifactId>
-      <version>0.6.1</version>
+      <version>0.6.4-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
