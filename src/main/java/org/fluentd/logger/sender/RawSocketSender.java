@@ -103,8 +103,6 @@ public class RawSocketSender implements Sender {
 
     private BufferedOutputStream out;
 
-    // TODO: in next version, pending buffer should be implemented
-    // with MessagePackBufferPacker.
     private ByteBuffer pendings;
 
     private ExponentialDelayReconnector reconnector;
