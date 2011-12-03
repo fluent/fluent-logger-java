@@ -23,7 +23,7 @@ public class TestSenderFluentdDownOperation {
      */
     @Test
     public void testFluentdDownOperation01() throws Exception {
-        int port = 24224;
+        int port = 25225;
         MessagePack msgpack = new MessagePack();
         msgpack.register(Event.class, EventTemplate.INSTANCE);
         BufferPacker packer = msgpack.createBufferPacker();
@@ -58,7 +58,7 @@ public class TestSenderFluentdDownOperation {
      */
     @Ignore @Test
     public void testFluentdDownOperation02()throws Exception {
-        int port = 24224;
+        int port = 25225;
         MessagePack msgpack = new MessagePack();
         msgpack.register(Event.class, EventTemplate.INSTANCE);
         BufferPacker packer = msgpack.createBufferPacker();

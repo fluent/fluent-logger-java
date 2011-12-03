@@ -4,13 +4,10 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.fluentd.logger.sender.Event;
 import org.fluentd.logger.sender.EventTemplate;
 import org.msgpack.MessagePack;
-import org.msgpack.MessageTypeException;
-import org.msgpack.packer.Packer;
 import org.msgpack.template.Templates;
 import org.msgpack.unpacker.Unpacker;
 
@@ -20,8 +17,8 @@ public class MockFluentd extends Thread {
         public void process(MessagePack msgpack, Socket socket) throws IOException;
     }
 
-    public static class MockEventTemplate extends EventTemplate {
-        public static MockEventTemplate INSTANCE = new MockEventTemplate();
+    public static class MockStringEventTemplate extends EventTemplate {
+        public static MockStringEventTemplate INSTANCE = new MockStringEventTemplate();
 
         public Event read(Unpacker u, Event to, boolean required) throws IOException {
             if (!required && u.trySkipNil()) {
@@ -57,7 +54,7 @@ public class MockFluentd extends Thread {
 
     public MockFluentd(int port, MockProcess mockProcess) throws IOException {
         msgpack = new MessagePack();
-        msgpack.register(Event.class, MockEventTemplate.INSTANCE);
+        msgpack.register(Event.class, MockStringEventTemplate.INSTANCE);
         serverSocket = new ServerSocket(port);
         process = mockProcess;
     }

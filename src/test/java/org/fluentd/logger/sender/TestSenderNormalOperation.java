@@ -24,7 +24,7 @@ public class TestSenderNormalOperation {
 
     @Test
     public void testNormalOperation01() throws Exception {
-        int port = 24224;
+        int port = 25225;
 
         // start mock server
         MockFluentd server = new MockFluentd(port, new MockFluentd.MockProcess() {

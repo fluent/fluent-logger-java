@@ -21,7 +21,7 @@ public class TestFluentLoggerNormalOperation {
 
     @Test
     public void testNormalOperation01() throws Exception {
-        int port = 24224;
+        int port = 25225;
 
         // start mock server
         MockFluentd server = new MockFluentd(port, new MockFluentd.MockProcess() {
@@ -36,7 +36,7 @@ public class TestFluentLoggerNormalOperation {
         server.start();
 
         // create logger object
-        FluentLogger logger = FluentLogger.getLogger("tag", "localhost", 24224);
+        FluentLogger logger = FluentLogger.getLogger("tag", "localhost", port);
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("t1k1", "t1v1");
         data.put("t1k2", "t1v2");
