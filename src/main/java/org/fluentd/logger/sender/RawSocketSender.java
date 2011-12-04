@@ -182,15 +182,15 @@ public class RawSocketSender implements Sender {
         }
     }
 
-    public void emit(String tag, Map<String, Object> data) {
-        emit(tag, System.currentTimeMillis(), data);
+    public boolean emit(String tag, Map<String, Object> data) {
+        return emit(tag, System.currentTimeMillis(), data);
     }
 
-    public void emit(String tag, long timestamp, Map<String, Object> data) {
-        emit(new Event(tag, timestamp, data));
+    public boolean emit(String tag, long timestamp, Map<String, Object> data) {
+        return emit(new Event(tag, timestamp, data));
     }
 
-    protected void emit(Event event) {
+    protected boolean emit(Event event) {
         if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("Created %s", new Object[] { event }));
         }
@@ -201,22 +201,25 @@ public class RawSocketSender implements Sender {
             bytes = msgpack.write(event);
         } catch (IOException e) {
             LOG.error("Cannot serialize event: " + event, e);
+            return false;
         }
 
         // send serialized data
-        if (bytes != null) {
-            send(bytes);
-        }
+        return send(bytes);
     }
 
-    private synchronized void send(byte[] bytes) {
+    private synchronized boolean send(byte[] bytes) {
         // buffering
-        appendBuffer(bytes);
+        if (pendings.position() + bytes.length > pendings.capacity()) {
+            LOG.error("Cannot send logs to " + server.toString());
+            return false;
+        }
+        pendings.put(bytes);
 
         try {
             // suppress reconnection burst
             if (!reconnector.enableReconnection(System.currentTimeMillis())) {
-                return;
+                return true;
             }
 
             // check whether connection is established or not
@@ -231,14 +234,7 @@ public class RawSocketSender implements Sender {
             // close socket
             close();
         }
-    }
-
-    void appendBuffer(byte[] bytes) {
-        if (pendings.position() + bytes.length > pendings.capacity()) {
-            LOG.error("FluentLogger: Cannot send logs to " + server.toString());
-            pendings.clear();
-        }
-        pendings.put(bytes);
+        return true;
     }
 
     public byte[] getBuffer() {
