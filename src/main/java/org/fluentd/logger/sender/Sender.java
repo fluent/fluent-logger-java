@@ -20,9 +20,9 @@ package org.fluentd.logger.sender;
 import java.util.Map;
 
 public interface Sender {
-    public void emit(String tag, Map<String, Object> data);
+    boolean emit(String tag, Map<String, Object> data);
 
-    public void emit(String tag, long timestamp, Map<String, Object> data);
+    boolean emit(String tag, long timestamp, Map<String, Object> data);
 
     public byte[] getBuffer();
 
