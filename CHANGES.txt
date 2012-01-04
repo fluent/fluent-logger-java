@@ -1,10 +1,13 @@
-Release 0.2.1 -
+Release 0.2.2 -
+
+Release 0.2.1 - 2012/01/05
   NEW FEATURES
     Changes FluentLogger API: log(String, Map<String, String>) to
     log(String, Map<String, Object>).
 
   IMPROVEMENTS
     Refactors some classes under org.fluentd.logger.sender package.
+    Updates version of MessagePack: 0.6.4
 
 Release 0.2.0 - 2011/10/30
   NEW FEATURES
