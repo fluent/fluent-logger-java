@@ -5,7 +5,7 @@
   <artifactId>fluent-logger</artifactId>
   <name>Fluent Logger for Java</name>
   <description>Java implementation of structured logger for Fluent.</description>
-  <version>0.2.1-SNAPSHOT</version>
+  <version>0.2.2-SNAPSHOT</version>
   <packaging>jar</packaging>
   <url>https://github.com/fluent/fluent-logger-java</url>
 
@@ -57,7 +57,7 @@
     <dependency>
       <groupId>org.msgpack</groupId>
       <artifactId>msgpack</artifactId>
-      <version>0.6.4-SNAPSHOT</version>
+      <version>0.6.4</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
