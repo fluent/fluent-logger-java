@@ -1,7 +1,7 @@
 //
 // A Structured Logger for Fluent
 //
-// Copyright (C) 2011 Muga Nishizawa
+// Copyright (C) 2011 - 2012 Muga Nishizawa
 //
 //    Licensed under the Apache License, Version 2.0 (the "License");
 //    you may not use this file except in compliance with the License.
@@ -26,12 +26,13 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.logging.Level;
 
 import org.msgpack.MessagePack;
-import org.slf4j.LoggerFactory;
 
 public class RawSocketSender implements Sender {
-    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(RawSocketSender.class);
+    private static final java.util.logging.Logger LOG =
+        java.util.logging.Logger.getLogger(RawSocketSender.class.getName());
 
     /**
      * Calcurate exponential delay for reconnecting
@@ -131,8 +132,9 @@ public class RawSocketSender implements Sender {
         try {
             connect();
         } catch (IOException e) {
-            LOG.error("Failed to connect fluentd: " + server.toString(), e);
-            LOG.error("Connection will be retried");
+            LOG.severe("Failed to connect fluentd: " + server.toString());
+            LOG.severe("Connection will be retried");
+            e.printStackTrace();
             close();
         }
     }
@@ -191,8 +193,8 @@ public class RawSocketSender implements Sender {
     }
 
     protected boolean emit(Event event) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("Created %s", new Object[] { event }));
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine(String.format("Created %s", new Object[] { event }));
         }
 
         byte[] bytes = null;
@@ -200,7 +202,8 @@ public class RawSocketSender implements Sender {
             // serialize tag, timestamp and data
             bytes = msgpack.write(event);
         } catch (IOException e) {
-            LOG.error("Cannot serialize event: " + event, e);
+            LOG.severe("Cannot serialize event: " + event);
+            e.printStackTrace();
             return false;
         }
 
@@ -211,7 +214,7 @@ public class RawSocketSender implements Sender {
     private synchronized boolean send(byte[] bytes) {
         // buffering
         if (pendings.position() + bytes.length > pendings.capacity()) {
-            LOG.error("Cannot send logs to " + server.toString());
+            LOG.severe("Cannot send logs to " + server.toString());
             return false;
         }
         pendings.put(bytes);
