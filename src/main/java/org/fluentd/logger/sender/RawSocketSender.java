@@ -23,7 +23,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.logging.Level;
@@ -255,19 +254,5 @@ public class RawSocketSender implements Sender {
     @Override
     public String toString() {
         return name;
-    }
-
-    // TODO: main method must be deleted later
-    public static void main(String[] args) throws Exception {
-        Sender sender = new RawSocketSender("localhost", 24224);
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("t1k1", "t1v1");
-        data.put("t1k2", "t1v2");
-        sender.emit("tag.label1", data);
-
-        Map<String, Object> data2 = new HashMap<String, Object>();
-        data2.put("t2k1", "t2v1");
-        data2.put("t2k2", "t2v2");
-        sender.emit("tag.label2", data2);
     }
 }
