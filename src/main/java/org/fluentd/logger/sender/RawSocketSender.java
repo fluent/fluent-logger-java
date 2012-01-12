@@ -184,7 +184,7 @@ public class RawSocketSender implements Sender {
     }
 
     public boolean emit(String tag, Map<String, Object> data) {
-        return emit(tag, System.currentTimeMillis(), data);
+        return emit(tag, System.currentTimeMillis() / 1000, data);
     }
 
     public boolean emit(String tag, long timestamp, Map<String, Object> data) {

@@ -27,7 +27,7 @@ public class TestSenderFluentdDownOperation {
         MessagePack msgpack = new MessagePack();
         msgpack.register(Event.class, EventTemplate.INSTANCE);
         BufferPacker packer = msgpack.createBufferPacker();
-        long timestamp = System.currentTimeMillis();
+        long timestamp = System.currentTimeMillis() / 1000;
 
         // start senders
         Sender sender = new RawSocketSender("localhost", port);
