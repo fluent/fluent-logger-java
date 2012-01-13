@@ -1,4 +1,8 @@
-Release 0.2.2 -
+Release 0.2.3 -
+
+Release 0.2.2 - 2012/01/13
+  BUG FIXMES
+    Fixes bug: wrong timestamp implementation in fluent-logger-java
 
 Release 0.2.1 - 2012/01/05
   NEW FEATURES
