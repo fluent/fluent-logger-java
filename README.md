@@ -7,12 +7,12 @@ logout, purchase, follow, etc).  Analyzing these event logs can be quite
 valuable for improving services.  However, collecting these logs easily and 
 reliably is a challenging task.
 
-Fluent solves the problem by having: easy installation, small footprint, plugins
+Fluentd solves the problem by having: easy installation, small footprint, plugins
 reliable buffering, log forwarding, etc.
 
-  * Fluent website: [http://github.com/fluent/fluent](http://github.com/fluent/fluent)
+  * Fluentd website: [http://github.com/fluent/fluentd](http://github.com/fluent/fluentd)
 
-**fluent-logger-java** is a Java library, to record events from Java application.
+**fluent-logger-java** is a Java library, to record events via Fluentd, from Java application.
 
 ## Requirements
 
