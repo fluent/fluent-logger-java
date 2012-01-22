@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.fluentd.logger.sender.Event;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.msgpack.MessagePack;
 import org.msgpack.unpacker.Unpacker;
@@ -67,5 +68,22 @@ public class TestFluentLoggerNormalOperation {
             assertEquals("t2v1", e.data.get("t2k1"));
             assertEquals("t2v2", e.data.get("t2k2"));
         }
+    }
+
+    @Ignore @Test
+    public void testNormalOperation02() throws Exception {
+        // create logger object
+        FluentLogger logger = FluentLogger.getLogger("tag");
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.put("t1k1", "t1v1");
+        data.put("t1k2", "t1v2");
+        logger.log("label1", data);
+
+        Map<String, Object> data2 = new HashMap<String, Object>();
+        data2.put("t2k1", "t2v1");
+        data2.put("t2k2", "t2v2");
+        logger.log("label2", data2);
+
+        logger.flush();
     }
 }

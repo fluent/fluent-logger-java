@@ -224,19 +224,20 @@ public class RawSocketSender implements Sender {
                 return true;
             }
 
-            // check whether connection is established or not
-            reconnect();
-
-            // write data
-            out.write(getBuffer());
-            out.flush();
-
-            clearBuffer();
+            // send pending data
+            flush();
         } catch (IOException e) {
             // close socket
             close();
         }
         return true;
+    }
+
+    public synchronized void flush() throws IOException {
+        reconnect(); // check whether connection is established or not
+        out.write(getBuffer()); // write data
+        out.flush();
+        clearBuffer();
     }
 
     public byte[] getBuffer() {

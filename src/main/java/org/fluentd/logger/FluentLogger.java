@@ -17,6 +17,7 @@
 //
 package org.fluentd.logger;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -88,6 +89,10 @@ public class FluentLogger {
         } else {
             return sender.emit(tagPrefix + "." + label, data);
         }
+    }
+
+    public void flush() throws IOException {
+        sender.flush();
     }
 
     protected void close0() {
