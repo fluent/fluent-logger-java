@@ -1,4 +1,6 @@
 Release 0.2.3 -
+  NEW FEATURES
+    Adds FluentLogger API: flush().
 
 Release 0.2.2 - 2012/01/13
   BUG FIXMES
