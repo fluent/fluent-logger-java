@@ -1,4 +1,10 @@
 Release 0.2.4 -
+  NEW FEATURES
+    Adds NullSender class.
+
+  IMPROVEMENTS
+    Changes behavior of FluentLogger#close(). When the method is called,
+    all logger objects are removed.
 
 Release 0.2.3 - 2012/01/22
   NEW FEATURES

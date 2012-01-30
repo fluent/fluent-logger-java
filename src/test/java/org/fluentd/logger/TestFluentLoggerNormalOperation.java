@@ -1,6 +1,7 @@
 package org.fluentd.logger;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -68,6 +69,9 @@ public class TestFluentLoggerNormalOperation {
             assertEquals("t2v1", e.data.get("t2k1"));
             assertEquals("t2v2", e.data.get("t2k2"));
         }
+
+        // close and delete
+        FluentLogger.close();
     }
 
     @Ignore @Test
@@ -85,5 +89,15 @@ public class TestFluentLoggerNormalOperation {
         logger.log("label2", data2);
 
         logger.flush();
+
+        // close and delete
+        FluentLogger.close();
     }
+
+    @Test
+    public void testWithNullSender() throws Exception {
+        assertTrue(true);        // TODO #MN
+
+    }
+
 }
