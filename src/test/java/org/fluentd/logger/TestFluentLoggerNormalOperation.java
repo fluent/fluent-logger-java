@@ -14,6 +14,7 @@ import java.util.Properties;
 
 import org.fluentd.logger.sender.Event;
 import org.fluentd.logger.sender.NullSender;
+import org.fluentd.logger.sender.Sender;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.msgpack.MessagePack;
@@ -97,6 +98,31 @@ public class TestFluentLoggerNormalOperation {
     }
 
     @Test
+    public void testWithNullSender() throws Exception {
+        // use NullSender
+        Properties props = System.getProperties();
+        props.setProperty(Config.FLUENT_SENDER_CLASS, NullSender.class.getName());
+
+        FluentLogger flog = FluentLogger.getLogger("tag");
+        {
+            Map<String, Object> data = new HashMap<String, Object>();
+            assertTrue(flog.log("label", data));
+        }
+        {
+            Map<String, Object> data = new HashMap<String, Object>();
+            assertTrue(flog.log("label", data, System.currentTimeMillis() / 1000));
+        }
+
+        Sender sender = flog.sender;
+        assertTrue(sender instanceof NullSender);
+
+        // close and delete
+        FluentLogger.close();
+
+        props.remove(Config.FLUENT_SENDER_CLASS);
+    }
+
+    @Test
     public void testClose() throws Exception {
         // use NullSender
         Properties props = System.getProperties();
@@ -119,5 +145,7 @@ public class TestFluentLoggerNormalOperation {
             loggers = FluentLogger.getLoggers();
             assertEquals(0, loggers.size());
         }
+
+        props.remove(Config.FLUENT_SENDER_CLASS);
     }
 }
