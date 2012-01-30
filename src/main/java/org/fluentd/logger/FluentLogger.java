@@ -18,8 +18,11 @@
 package org.fluentd.logger;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.WeakHashMap;
 
 import org.fluentd.logger.sender.RawSocketSender;
@@ -44,11 +47,33 @@ public class FluentLogger {
         if (loggers.containsKey(key)) {
             return loggers.get(key);
         } else {
-            FluentLogger logger = new FluentLogger(tag,
-                    new RawSocketSender(host, port, timeout, bufferCapacity));
+            Sender sender = null;
+            Properties props = System.getProperties();
+            if (!props.containsKey(Config.FLUENT_SENDER_CLASS)) { // create default sender object
+                sender = new RawSocketSender(host, port, timeout, bufferCapacity);
+            } else {
+                String senderClassName = props.getProperty(Config.FLUENT_SENDER_CLASS);
+                try {
+                    sender = createSenderInstance(senderClassName,
+                            new Object[] { host, port, timeout, bufferCapacity });
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            FluentLogger logger = new FluentLogger(tag, sender);
             loggers.put(key, logger);
             return logger;
         }
+    }
+
+    private static Sender createSenderInstance(final String className, final Object[] params)
+            throws ClassNotFoundException, SecurityException, NoSuchMethodException,
+            IllegalArgumentException, InstantiationException, IllegalAccessException,
+            InvocationTargetException {
+        Class<?> cl = FluentLogger.class.getClassLoader().loadClass(className);
+        Constructor<?> cons = cl.getDeclaredConstructor(
+                new Class[] { String.class, int.class, int.class, int.class });
+        return (Sender) cons.newInstance(params);
     }
 
     public static synchronized void close() {
