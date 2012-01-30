@@ -80,6 +80,7 @@ public class FluentLogger {
         for (FluentLogger logger : loggers.values()) {
             logger.close0();
         }
+        loggers.clear();
     }
 
     protected String tagPrefix;
