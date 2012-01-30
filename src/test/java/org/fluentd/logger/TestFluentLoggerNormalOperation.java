@@ -10,8 +10,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.fluentd.logger.sender.Event;
+import org.fluentd.logger.sender.NullSender;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.msgpack.MessagePack;
@@ -95,9 +97,27 @@ public class TestFluentLoggerNormalOperation {
     }
 
     @Test
-    public void testWithNullSender() throws Exception {
-        assertTrue(true);        // TODO #MN
+    public void testClose() throws Exception {
+        // use NullSender
+        Properties props = System.getProperties();
+        props.setProperty(Config.FLUENT_SENDER_CLASS, NullSender.class.getName());
 
+        // create logger objects
+        FluentLogger.getLogger("tag1");
+        FluentLogger.getLogger("tag2");
+        FluentLogger.getLogger("tag3");
+
+        Map<String, FluentLogger> loggers;
+        {
+            loggers = FluentLogger.getLoggers();
+            assertEquals(3, loggers.size());
+        }
+
+        // close and delete
+        FluentLogger.close();
+        {
+            loggers = FluentLogger.getLoggers();
+            assertEquals(0, loggers.size());
+        }
     }
-
 }

@@ -76,6 +76,13 @@ public class FluentLogger {
         return (Sender) cons.newInstance(params);
     }
 
+    /**
+     * the method is for testing
+     */
+    static Map<String, FluentLogger> getLoggers() {
+        return loggers;
+    }
+
     public static synchronized void close() {
         for (FluentLogger logger : loggers.values()) {
             logger.close0();
