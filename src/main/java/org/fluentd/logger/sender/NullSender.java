@@ -47,4 +47,9 @@ public class NullSender implements Sender {
     @Override
     public void close() {
     }
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
 }
