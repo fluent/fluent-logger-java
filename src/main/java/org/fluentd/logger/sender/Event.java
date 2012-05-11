@@ -36,6 +36,10 @@ public class Event {
     public Event() {
     }
 
+    public Event(String tag, Map<String, Object> data) {
+        this(tag, System.currentTimeMillis() / 1000, data);
+    }
+
     public Event(String tag, long timestamp, Map<String, Object> data) {
         this.tag = tag;
         this.timestamp = timestamp;
@@ -44,8 +48,8 @@ public class Event {
 
     @Override
     public String toString() {
-        return String.format("Event { tag=%s, timestamp=%d, data=%s }",
-                new Object[] { tag, timestamp, data.toString() });
+        return String.format("Event{tag=%s,timestamp=%d,data=%s}",
+                tag, timestamp, data.toString());
     }
 
     public static class EventTemplate extends AbstractTemplate<Event> {
