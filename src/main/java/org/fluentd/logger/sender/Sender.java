@@ -17,7 +17,6 @@
 //
 package org.fluentd.logger.sender;
 
-import java.io.IOException;
 import java.util.Map;
 
 public interface Sender {
@@ -25,7 +24,7 @@ public interface Sender {
 
     boolean emit(String tag, long timestamp, Map<String, Object> data);
 
-    void flush() throws IOException;
+    void flush();
 
     public byte[] getBuffer();
 

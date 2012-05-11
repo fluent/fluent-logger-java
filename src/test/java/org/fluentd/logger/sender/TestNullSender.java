@@ -27,12 +27,8 @@ public class TestNullSender {
         }
 
         // flush
-        try {
-            sender.flush();
-            assertTrue(true);
-        } catch (IOException e) {
-            fail();
-        }
+        sender.flush();
+        assertTrue(true);
 
         // close
         sender.close();

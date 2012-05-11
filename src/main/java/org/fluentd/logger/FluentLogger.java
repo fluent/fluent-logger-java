@@ -17,7 +17,6 @@
 //
 package org.fluentd.logger;
 
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -124,7 +123,7 @@ public class FluentLogger {
         }
     }
 
-    public void flush() throws IOException {
+    public void flush() {
         sender.flush();
     }
 

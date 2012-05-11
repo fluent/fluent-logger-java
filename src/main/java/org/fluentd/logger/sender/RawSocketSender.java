@@ -218,26 +218,26 @@ public class RawSocketSender implements Sender {
         }
         pendings.put(bytes);
 
-        try {
-            // suppress reconnection burst
-            if (!reconnector.enableReconnection(System.currentTimeMillis())) {
-                return true;
-            }
-
-            // send pending data
-            flush();
-        } catch (IOException e) {
-            // close socket
-            close();
+        // suppress reconnection burst
+        if (!reconnector.enableReconnection(System.currentTimeMillis())) {
+            return true;
         }
+
+        // send pending data
+        flush();
+
         return true;
     }
 
-    public synchronized void flush() throws IOException {
-        reconnect(); // check whether connection is established or not
-        out.write(getBuffer()); // write data
-        out.flush();
-        clearBuffer();
+    public synchronized void flush() {
+        try {
+            reconnect(); // check whether connection is established or not
+            out.write(getBuffer()); // write data
+            out.flush();
+            clearBuffer();
+        } catch (IOException e) {
+            LOG.throwing(this.getClass().getName(), "flush", e);
+        }
     }
 
     public byte[] getBuffer() {

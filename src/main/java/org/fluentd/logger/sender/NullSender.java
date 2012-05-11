@@ -17,7 +17,6 @@
 //
 package org.fluentd.logger.sender;
 
-import java.io.IOException;
 import java.util.Map;
 
 public class NullSender implements Sender {
@@ -36,7 +35,7 @@ public class NullSender implements Sender {
     }
 
     @Override
-    public void flush() throws IOException {
+    public void flush() {
     }
 
     @Override
