@@ -6,7 +6,6 @@ import java.net.Socket;
 import java.util.HashMap;
 
 import org.fluentd.logger.sender.Event;
-import org.fluentd.logger.sender.EventTemplate;
 import org.msgpack.MessagePack;
 import org.msgpack.template.Templates;
 import org.msgpack.unpacker.Unpacker;
@@ -17,7 +16,7 @@ public class MockFluentd extends Thread {
         public void process(MessagePack msgpack, Socket socket) throws IOException;
     }
 
-    public static class MockStringEventTemplate extends EventTemplate {
+    public static class MockStringEventTemplate extends Event.EventTemplate {
         public static MockStringEventTemplate INSTANCE = new MockStringEventTemplate();
 
         public Event read(Unpacker u, Event to, boolean required) throws IOException {
