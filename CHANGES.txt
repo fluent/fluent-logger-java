@@ -1,6 +1,8 @@
 Release 0.2.5 - 20XX/XX/XX
   IMPROVEMENTS
     Upgrades version of msgpack: 0.6.4 to 0.6.6
+    Changes logging API: FluentLogger#flush() throws IOException to
+    FluentLogger#flush()
 
 Release 0.2.4 - 2012/01/30
   NEW FEATURES
