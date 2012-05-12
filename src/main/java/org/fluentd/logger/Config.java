@@ -17,8 +17,5 @@
 //
 package org.fluentd.logger;
 
-public class Config {
-
-    public static final String FLUENT_SENDER_CLASS = "fluentd.logger.sender.class";
-
+public class Config implements Constants {
 }

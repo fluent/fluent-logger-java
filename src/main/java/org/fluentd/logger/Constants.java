@@ -19,4 +19,8 @@ package org.fluentd.logger;
 
 public interface Constants {
 
+    String FLUENT_SENDER_CLASS = "fluentd.logger.sender.class";
+
+    String FLUENT_RECONNECTOR_CLASS = "fluentd.logger.reconnector.class";
+
 }
