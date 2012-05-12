@@ -15,6 +15,7 @@ import java.util.Properties;
 import org.fluentd.logger.sender.Event;
 import org.fluentd.logger.sender.NullSender;
 import org.fluentd.logger.sender.Sender;
+import org.fluentd.logger.util.MockFluentd;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.msgpack.MessagePack;

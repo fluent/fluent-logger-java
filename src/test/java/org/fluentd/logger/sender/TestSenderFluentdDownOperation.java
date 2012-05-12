@@ -7,10 +7,10 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.fluentd.logger.MockFluentd;
-import org.fluentd.logger.MockFluentd.MockProcess;
 import org.fluentd.logger.sender.RawSocketSender;
 import org.fluentd.logger.sender.Sender;
+import org.fluentd.logger.util.MockFluentd;
+import org.fluentd.logger.util.MockFluentd.MockProcess;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.msgpack.MessagePack;

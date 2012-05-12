@@ -83,8 +83,7 @@ public class RawSocketSender implements Sender {
         try {
             socket = new Socket();
             socket.connect(server);
-            // the timeout value to be used in milliseconds
-            socket.setSoTimeout(timeout);
+            socket.setSoTimeout(timeout); // the timeout value to be used in milliseconds
             out = new BufferedOutputStream(socket.getOutputStream());
             reconnector.clearErrorHistory();
         } catch (IOException e) {
@@ -189,7 +188,7 @@ public class RawSocketSender implements Sender {
         return ret;
     }
 
-    void clearBuffer() {
+    private void clearBuffer() {
         pendings.clear();
     }
 
