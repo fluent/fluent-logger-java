@@ -48,7 +48,8 @@ public class FluentLogger {
         } else {
             Sender sender = null;
             Properties props = System.getProperties();
-            if (!props.containsKey(Config.FLUENT_SENDER_CLASS)) { // create default sender object
+            if (!props.containsKey(Config.FLUENT_SENDER_CLASS)) {
+                // create default sender object
                 sender = new RawSocketSender(host, port, timeout, bufferCapacity);
             } else {
                 String senderClassName = props.getProperty(Config.FLUENT_SENDER_CLASS);
@@ -65,12 +66,14 @@ public class FluentLogger {
         }
     }
 
-    private static Sender createSenderInstance(final String className, final Object[] params)
-            throws ClassNotFoundException, SecurityException, NoSuchMethodException,
-            IllegalArgumentException, InstantiationException, IllegalAccessException,
-            InvocationTargetException {
-        Class<?> cl = FluentLogger.class.getClassLoader().loadClass(className);
-        Constructor<?> cons = cl.getDeclaredConstructor(
+    @SuppressWarnings("unchecked")
+    private static Sender createSenderInstance(final String className,
+            final Object[] params) throws ClassNotFoundException, SecurityException,
+            NoSuchMethodException, IllegalArgumentException, InstantiationException,
+            IllegalAccessException, InvocationTargetException {
+        Class<Sender> cl = (Class<Sender>)
+                FluentLogger.class.getClassLoader().loadClass(className);
+        Constructor<Sender> cons = cl.getDeclaredConstructor(
                 new Class[] { String.class, int.class, int.class, int.class });
         return (Sender) cons.newInstance(params);
     }
@@ -82,9 +85,9 @@ public class FluentLogger {
         return loggers;
     }
 
-    public static synchronized void close() {
+    public static synchronized void closeAll() {
         for (FluentLogger logger : loggers.values()) {
-            logger.close0();
+            logger.close();
         }
         loggers.clear();
     }
@@ -127,11 +130,15 @@ public class FluentLogger {
         sender.flush();
     }
 
-    protected void close0() {
+    public void close() {
         if (sender != null) {
             sender.close();
             sender = null;
         }
+    }
+
+    public String getName() {
+        return String.format("%s_%s", tagPrefix, sender.getName());
     }
 
     @Override

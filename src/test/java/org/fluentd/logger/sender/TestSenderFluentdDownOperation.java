@@ -21,7 +21,7 @@ public class TestSenderFluentdDownOperation {
     /**
      * if Sender object was created when fluentd doesn't work, ...
      */
-    @Test
+    @Test @Ignore
     public void testFluentdDownOperation01() throws Exception {
         int port = 25225;
         MessagePack msgpack = new MessagePack();
