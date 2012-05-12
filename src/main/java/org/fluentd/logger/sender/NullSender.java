@@ -47,8 +47,12 @@ public class NullSender implements Sender {
     public void close() {
     }
 
+    public String getName() {
+        return "null";
+    }
+
     @Override
     public String toString() {
-        return super.toString();
+        return this.getClass().getName();
     }
 }

@@ -29,4 +29,6 @@ public interface Sender {
     public byte[] getBuffer();
 
     public void close();
+
+    public String getName();
 }

@@ -38,8 +38,6 @@ public class RawSocketSender implements Sender {
 
     private Socket socket;
 
-    private String name;
-
     private int timeout;
 
     private BufferedOutputStream out;
@@ -47,6 +45,8 @@ public class RawSocketSender implements Sender {
     private ByteBuffer pendings;
 
     private Reconnector reconnector;
+
+    private String name;
 
     public RawSocketSender() {
         this("localhost", 24224);
@@ -61,10 +61,8 @@ public class RawSocketSender implements Sender {
         msgpack.register(Event.class, Event.EventTemplate.INSTANCE);
         pendings = ByteBuffer.allocate(bufferCapacity);
         server = new InetSocketAddress(host, port);
-        name = String.format("%s{host=%s,port=%d,timeout=%d,bufCap=%d}",
-                new Object[] { this.getClass().getName(), host, port, timeout,
-                        bufferCapacity });
         reconnector = new ExponentialDelayReconnector();
+        name = String.format("%s_%d_%d_%d", host, port, timeout, bufferCapacity);
         open();
     }
 
@@ -171,8 +169,10 @@ public class RawSocketSender implements Sender {
 
     public synchronized void flush() {
         try {
-            reconnect(); // check whether connection is established or not
-            out.write(getBuffer()); // write data
+            // check whether connection is established or not
+            reconnect();
+            // write data
+            out.write(getBuffer());
             out.flush();
             clearBuffer();
         } catch (IOException e) {
@@ -192,8 +192,12 @@ public class RawSocketSender implements Sender {
         pendings.clear();
     }
 
+    public String getName() {
+        return name;
+    }
+
     @Override
     public String toString() {
-        return name;
+        return getName();
     }
 }
