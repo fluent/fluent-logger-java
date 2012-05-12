@@ -92,6 +92,12 @@ public class FluentLogger {
         loggers.clear();
     }
 
+    public static synchronized void flushAll() {
+        for (FluentLogger logger : loggers.values()) {
+            logger.flush();
+        }
+    }
+
     protected String tagPrefix;
 
     protected Sender sender;
