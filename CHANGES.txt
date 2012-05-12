@@ -1,7 +1,7 @@
 Release 0.2.5 - 20XX/XX/XX
   IMPROVEMENTS
     Upgrades version of msgpack: 0.6.4 to 0.6.6
-    Added a new logging API: FluentLogger#flush()
+    Added a new logging API: FluentLogger#flush() and flushAll()
     Renamed a logging API: FluentLogger#close() to closeAll()
     Divides a reconnector module from a sender module
 
