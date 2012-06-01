@@ -66,7 +66,7 @@ public class TestFluentLogger {
         fluentd.close();
 
         // wait for unpacking event data on fluentd
-        Thread.sleep(10);
+        Thread.sleep(20);
 
         // check data
         assertEquals(2, elist.size());
