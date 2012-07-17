@@ -64,7 +64,7 @@ directory.  File name will be fluent-logger-${logger.version}-jar-with-dependenc
 For more detail, see pom.xml.
 
 **Replace ${logger.version} with the current version of Fluent Logger for Java.**
-**The current version is 0.2.4.**
+**The current version is 0.2.5.**
 
 ## Quickstart
 
