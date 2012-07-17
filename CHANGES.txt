@@ -1,4 +1,4 @@
-Release 0.2.5 - 20XX/XX/XX
+Release 0.2.5 - 2012/07/18
   IMPROVEMENTS
     Upgrades version of msgpack: 0.6.4 to 0.6.6
     Added a new logging API: FluentLogger#flush() and flushAll()
