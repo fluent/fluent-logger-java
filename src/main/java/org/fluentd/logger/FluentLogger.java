@@ -17,14 +17,9 @@
 //
 package org.fluentd.logger;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
-import java.util.WeakHashMap;
 
-import org.fluentd.logger.sender.RawSocketSender;
 import org.fluentd.logger.sender.Sender;
 
 public class FluentLogger {
