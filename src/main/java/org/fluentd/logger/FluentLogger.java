@@ -29,73 +29,34 @@ import org.fluentd.logger.sender.Sender;
 
 public class FluentLogger {
 
-    private static Map<String, FluentLogger> loggers = new WeakHashMap<String, FluentLogger>();
+    private static FluentLoggerFactory factory = new FluentLoggerFactory();
 
     public static FluentLogger getLogger(String tag) {
-        return getLogger(tag, "localhost", 24224);
+        return factory.getLogger(tag, "localhost", 24224);
     }
 
     public static FluentLogger getLogger(String tag, String host, int port) {
-        return getLogger(tag, host, port, 3 * 1000, 1 * 1024 * 1024);
+        return factory.getLogger(tag, host, port, 3 * 1000, 1 * 1024 * 1024);
     }
 
     public static synchronized FluentLogger getLogger(
             String tag, String host, int port, int timeout, int bufferCapacity) {
-        String key = String.format("%s_%s_%d_%d_%d",
-                new Object[] { tag, host, port, timeout, bufferCapacity });
-        if (loggers.containsKey(key)) {
-            return loggers.get(key);
-        } else {
-            Sender sender = null;
-            Properties props = System.getProperties();
-            if (!props.containsKey(Config.FLUENT_SENDER_CLASS)) {
-                // create default sender object
-                sender = new RawSocketSender(host, port, timeout, bufferCapacity);
-            } else {
-                String senderClassName = props.getProperty(Config.FLUENT_SENDER_CLASS);
-                try {
-                    sender = createSenderInstance(senderClassName,
-                            new Object[] { host, port, timeout, bufferCapacity });
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            FluentLogger logger = new FluentLogger(tag, sender);
-            loggers.put(key, logger);
-            return logger;
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private static Sender createSenderInstance(final String className,
-            final Object[] params) throws ClassNotFoundException, SecurityException,
-            NoSuchMethodException, IllegalArgumentException, InstantiationException,
-            IllegalAccessException, InvocationTargetException {
-        Class<Sender> cl = (Class<Sender>)
-                FluentLogger.class.getClassLoader().loadClass(className);
-        Constructor<Sender> cons = cl.getDeclaredConstructor(
-                new Class[] { String.class, int.class, int.class, int.class });
-        return (Sender) cons.newInstance(params);
+        return factory.getLogger(tag, host, port, timeout, bufferCapacity);
     }
 
     /**
      * the method is for testing
      */
     static Map<String, FluentLogger> getLoggers() {
-        return loggers;
+        return factory.getLoggers();
     }
 
     public static synchronized void closeAll() {
-        for (FluentLogger logger : loggers.values()) {
-            logger.close();
-        }
-        loggers.clear();
+        factory.closeAll();
     }
 
     public static synchronized void flushAll() {
-        for (FluentLogger logger : loggers.values()) {
-            logger.flush();
-        }
+        factory.flushAll();
     }
 
     protected String tagPrefix;
