@@ -1,5 +1,9 @@
 Release 0.2.6 - 20XX/XX/XX
 
+Release 0.2.6 - 2012/11/15
+  IMPROVEMENTS
+    Added FluentLoggerFactory class for fluent-logger-scala
+
 Release 0.2.5 - 2012/07/18
   IMPROVEMENTS
     Upgrades version of msgpack: 0.6.4 to 0.6.6
