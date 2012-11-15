@@ -1,4 +1,4 @@
-Release 0.2.6 - 20XX/XX/XX
+Release 0.2.7 - 20XX/XX/XX
 
 Release 0.2.6 - 2012/11/15
   IMPROVEMENTS
