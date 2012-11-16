@@ -1,4 +1,6 @@
-Release 0.2.7 - 20XX/XX/XX
+Release 0.2.7 - 2012/11/17
+  IMPROVEMENTS
+    Changed pom.xml for managing jar file in Sonatype repository
 
 Release 0.2.6 - 2012/11/15
   IMPROVEMENTS
