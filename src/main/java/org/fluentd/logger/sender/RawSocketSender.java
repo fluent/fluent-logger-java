@@ -63,6 +63,7 @@ public class RawSocketSender implements Sender {
         server = new InetSocketAddress(host, port);
         reconnector = new ExponentialDelayReconnector();
         name = String.format("%s_%d_%d_%d", host, port, timeout, bufferCapacity);
+        this.timeout = timeout;
         open();
     }
 
