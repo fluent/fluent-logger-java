@@ -5,7 +5,7 @@
   <artifactId>fluent-logger</artifactId>
   <name>Fluent Logger for Java</name>
   <description>Java implementation of structured logger for Fluent.</description>
-  <version>0.2.8</version>
+  <version>0.2.9-SNAPSHOT</version>
   <packaging>jar</packaging>
   <url>https://github.com/fluent/fluent-logger-java</url>
 
