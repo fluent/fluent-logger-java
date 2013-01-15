@@ -39,7 +39,7 @@
 
   <issueManagement>
     <system>GitHub</system>
-    <url>https://github.com/msgpack/msgpack-java/issues</url>
+    <url>https://github.com/fluent/fluent-logger-java/issues</url>
   </issueManagement>
 
   <dependencies>
