@@ -1,3 +1,7 @@
+Release 0.2.8 - 20XX/XX/XX
+  BUG FIXMES
+    ISSUE-3: Missing timeout initialization in RawSocketSender
+
 Release 0.2.7 - 2012/11/17
   IMPROVEMENTS
     Changed pom.xml for managing jar file in Sonatype repository
