@@ -29,8 +29,8 @@ import java.util.logging.Level;
 import org.msgpack.MessagePack;
 
 public class RawSocketSender implements Sender {
-    private static final java.util.logging.Logger LOG =
-        java.util.logging.Logger.getLogger(RawSocketSender.class.getName());
+    private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(RawSocketSender.class
+            .getName());
 
     private MessagePack msgpack;
 
@@ -57,11 +57,16 @@ public class RawSocketSender implements Sender {
     }
 
     public RawSocketSender(String host, int port, int timeout, int bufferCapacity) {
+        this(host, port, timeout, bufferCapacity, new ExponentialDelayReconnector());
+
+    }
+
+    public RawSocketSender(String host, int port, int timeout, int bufferCapacity, Reconnector reconnector) {
         msgpack = new MessagePack();
         msgpack.register(Event.class, Event.EventTemplate.INSTANCE);
         pendings = ByteBuffer.allocate(bufferCapacity);
         server = new InetSocketAddress(host, port);
-        reconnector = new ExponentialDelayReconnector();
+        this.reconnector = reconnector;
         name = String.format("%s_%d_%d_%d", host, port, timeout, bufferCapacity);
         this.timeout = timeout;
         open();
@@ -84,17 +89,15 @@ public class RawSocketSender implements Sender {
             socket.connect(server);
             socket.setSoTimeout(timeout); // the timeout value to be used in milliseconds
             out = new BufferedOutputStream(socket.getOutputStream());
-            reconnector.clearErrorHistory();
         } catch (IOException e) {
-            reconnector.addErrorHistory(System.currentTimeMillis());
             throw e;
         }
     }
 
-    private void reconnect() throws IOException {
+    private void reconnect(boolean forceReconnection) throws IOException {
         if (socket == null) {
             connect();
-        } else if (socket.isClosed() || (!socket.isConnected())) {
+        } else if (forceReconnection || socket.isClosed() || (!socket.isConnected())) {
             close();
             connect();
         }
@@ -171,13 +174,15 @@ public class RawSocketSender implements Sender {
     public synchronized void flush() {
         try {
             // check whether connection is established or not
-            reconnect();
+            reconnect(!reconnector.isErrorHistoryEmpty());
             // write data
             out.write(getBuffer());
             out.flush();
             clearBuffer();
+            reconnector.clearErrorHistory();
         } catch (IOException e) {
             LOG.throwing(this.getClass().getName(), "flush", e);
+            reconnector.addErrorHistory(System.currentTimeMillis());
         }
     }
 
