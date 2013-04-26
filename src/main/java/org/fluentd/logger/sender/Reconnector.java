@@ -22,5 +22,7 @@ public interface Reconnector {
 
     void addErrorHistory(long timestamp);
 
+    boolean isErrorHistoryEmpty();
+
     boolean enableReconnection(long timestamp);
 }
