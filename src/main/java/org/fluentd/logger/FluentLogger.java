@@ -26,17 +26,17 @@ public class FluentLogger {
 
     private static FluentLoggerFactory factory = new FluentLoggerFactory();
 
-    public static FluentLogger getLogger(String tag) {
-        return factory.getLogger(tag, "localhost", 24224);
+    public static FluentLogger getLogger(String tagPrefix) {
+        return factory.getLogger(tagPrefix, "localhost", 24224);
     }
 
-    public static FluentLogger getLogger(String tag, String host, int port) {
-        return factory.getLogger(tag, host, port, 3 * 1000, 1 * 1024 * 1024);
+    public static FluentLogger getLogger(String tagPrefix, String host, int port) {
+        return factory.getLogger(tagPrefix, host, port, 3 * 1000, 1 * 1024 * 1024);
     }
 
     public static synchronized FluentLogger getLogger(
-            String tag, String host, int port, int timeout, int bufferCapacity) {
-        return factory.getLogger(tag, host, port, timeout, bufferCapacity);
+            String tagPrefix, String host, int port, int timeout, int bufferCapacity) {
+        return factory.getLogger(tagPrefix, host, port, timeout, bufferCapacity);
     }
 
     /**
@@ -61,30 +61,38 @@ public class FluentLogger {
     protected FluentLogger() {
     }
 
-    protected FluentLogger(String tag, Sender sender) {
-        tagPrefix = tag;
+    protected FluentLogger(String tagPrefix, Sender sender) {
+        this.tagPrefix = tagPrefix;
         this.sender = sender;
     }
 
-    public boolean log(String label, String key, Object value) {
-        return log(label, key, value, 0);
+    public boolean log(String tag, String key, Object value) {
+        return log(tag, key, value, 0);
     }
 
-    public boolean log(String label, String key, Object value, long timestamp) {
+    public boolean log(String tag, String key, Object value, long timestamp) {
         Map<String, Object> data = new HashMap<String, Object>();
         data.put(key, value);
-        return log(label, data, timestamp);
+        return log(tag, data, timestamp);
     }
 
-    public boolean log(String label, Map<String, Object> data) {
-        return log(label, data, 0);
+    public boolean log(String tag, Map<String, Object> data) {
+        return log(tag, data, 0);
     }
 
-    public boolean log(String label, Map<String, Object> data, long timestamp) {
+    public boolean log(String tag, Map<String, Object> data, long timestamp) {
+        String concatTag = null;
+        if (tagPrefix == null || tagPrefix.length() == 0) {
+            concatTag = tag;
+        }
+        else {
+            concatTag = tagPrefix + "." + tag;
+        }
+
         if (timestamp != 0) {
-            return sender.emit(tagPrefix + "." + label, timestamp, data);
+            return sender.emit(concatTag, timestamp, data);
         } else {
-            return sender.emit(tagPrefix + "." + label, data);
+            return sender.emit(concatTag, data);
         }
     }
 

@@ -34,18 +34,18 @@ public class FluentLoggerFactory {
         loggers = new WeakHashMap<String, FluentLogger>();
     }
 
-    public FluentLogger getLogger(String tag) {
-        return getLogger(tag, "localhost", 24224);
+    public FluentLogger getLogger(String tagPrefix) {
+        return getLogger(tagPrefix, "localhost", 24224);
     }
 
-    public FluentLogger getLogger(String tag, String host, int port) {
-        return getLogger(tag, host, port, 3 * 1000, 1 * 1024 * 1024);
+    public FluentLogger getLogger(String tagPrefix, String host, int port) {
+        return getLogger(tagPrefix, host, port, 3 * 1000, 1 * 1024 * 1024);
     }
 
     public synchronized FluentLogger getLogger(
-            String tag, String host, int port, int timeout, int bufferCapacity) {
+            String tagPrefix, String host, int port, int timeout, int bufferCapacity) {
         String key = String.format("%s_%s_%d_%d_%d",
-                new Object[] { tag, host, port, timeout, bufferCapacity });
+                new Object[] { tagPrefix, host, port, timeout, bufferCapacity });
         if (loggers.containsKey(key)) {
             return loggers.get(key);
         } else {
@@ -63,7 +63,7 @@ public class FluentLoggerFactory {
                     throw new RuntimeException(e);
                 }
             }
-            FluentLogger logger = new FluentLogger(tag, sender);
+            FluentLogger logger = new FluentLogger(tagPrefix, sender);
             loggers.put(key, logger);
             return logger;
         }
