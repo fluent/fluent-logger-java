@@ -45,7 +45,7 @@ public class FluentLoggerFactory {
     }
 
     public FluentLogger getLogger(String tagPrefix, String host, int port, int timeout, int bufferCapacity) {
-        return getLogger(tagPrefix, host, port, timeout, bufferCapacity);
+        return getLogger(tagPrefix, host, port, timeout, bufferCapacity, new ExponentialDelayReconnector());
     }
 
     public synchronized FluentLogger getLogger(String tagPrefix, String host, int port, int timeout, int bufferCapacity,
