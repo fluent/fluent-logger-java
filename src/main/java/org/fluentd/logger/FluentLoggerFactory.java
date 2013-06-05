@@ -17,13 +17,15 @@
 //
 package org.fluentd.logger;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.WeakHashMap;
 
+import org.fluentd.logger.sender.ExponentialDelayReconnector;
 import org.fluentd.logger.sender.RawSocketSender;
+import org.fluentd.logger.sender.Reconnector;
 import org.fluentd.logger.sender.Sender;
 
 public class FluentLoggerFactory {
@@ -39,13 +41,16 @@ public class FluentLoggerFactory {
     }
 
     public FluentLogger getLogger(String tagPrefix, String host, int port) {
-        return getLogger(tagPrefix, host, port, 3 * 1000, 1 * 1024 * 1024);
+        return getLogger(tagPrefix, host, port, 3 * 1000, 1 * 1024 * 1024, new ExponentialDelayReconnector());
     }
 
-    public synchronized FluentLogger getLogger(
-            String tagPrefix, String host, int port, int timeout, int bufferCapacity) {
-        String key = String.format("%s_%s_%d_%d_%d",
-                new Object[] { tagPrefix, host, port, timeout, bufferCapacity });
+    public FluentLogger getLogger(String tagPrefix, String host, int port, int timeout, int bufferCapacity) {
+        return getLogger(tagPrefix, host, port, timeout, bufferCapacity, new ExponentialDelayReconnector());
+    }
+
+    public synchronized FluentLogger getLogger(String tagPrefix, String host, int port, int timeout, int bufferCapacity,
+            Reconnector reconnector) {
+        String key = String.format("%s_%s_%d_%d_%d", new Object[] { tagPrefix, host, port, timeout, bufferCapacity });
         if (loggers.containsKey(key)) {
             return loggers.get(key);
         } else {
@@ -53,12 +58,11 @@ public class FluentLoggerFactory {
             Properties props = System.getProperties();
             if (!props.containsKey(Config.FLUENT_SENDER_CLASS)) {
                 // create default sender object
-                sender = new RawSocketSender(host, port, timeout, bufferCapacity);
+                sender = new RawSocketSender(host, port, timeout, bufferCapacity, reconnector);
             } else {
                 String senderClassName = props.getProperty(Config.FLUENT_SENDER_CLASS);
                 try {
-                    sender = createSenderInstance(senderClassName,
-                            new Object[] { host, port, timeout, bufferCapacity });
+                    sender = createSenderInstance(senderClassName, new Object[] { host, port, timeout, bufferCapacity });
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -70,14 +74,12 @@ public class FluentLoggerFactory {
     }
 
     @SuppressWarnings("unchecked")
-    private Sender createSenderInstance(final String className,
-            final Object[] params) throws ClassNotFoundException, SecurityException,
-            NoSuchMethodException, IllegalArgumentException, InstantiationException,
+    private Sender createSenderInstance(final String className, final Object[] params) throws ClassNotFoundException,
+            SecurityException, NoSuchMethodException, IllegalArgumentException, InstantiationException,
             IllegalAccessException, InvocationTargetException {
-        Class<Sender> cl = (Class<Sender>)
-                FluentLogger.class.getClassLoader().loadClass(className);
-        Constructor<Sender> cons = cl.getDeclaredConstructor(
-                new Class[] { String.class, int.class, int.class, int.class });
+        Class<Sender> cl = (Class<Sender>) FluentLogger.class.getClassLoader().loadClass(className);
+        Constructor<Sender> cons = cl.getDeclaredConstructor(new Class[] { String.class, int.class, int.class,
+                int.class });
         return (Sender) cons.newInstance(params);
     }
 
@@ -102,4 +104,3 @@ public class FluentLoggerFactory {
     }
 
 }
-

@@ -42,6 +42,10 @@ public class ExponentialDelayReconnector implements Reconnector {
         }
     }
 
+    public boolean isErrorHistoryEmpty() {
+        return errorHistory.isEmpty();
+    }
+
     public void clearErrorHistory() {
         errorHistory.clear();
     }
