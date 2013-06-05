@@ -20,6 +20,7 @@ package org.fluentd.logger;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.fluentd.logger.sender.Reconnector;
 import org.fluentd.logger.sender.Sender;
 
 public class FluentLogger {
@@ -34,9 +35,13 @@ public class FluentLogger {
         return factory.getLogger(tagPrefix, host, port, 3 * 1000, 1 * 1024 * 1024);
     }
 
-    public static synchronized FluentLogger getLogger(
-            String tagPrefix, String host, int port, int timeout, int bufferCapacity) {
+    public static synchronized FluentLogger getLogger(String tagPrefix, String host, int port, int timeout, int bufferCapacity) {
         return factory.getLogger(tagPrefix, host, port, timeout, bufferCapacity);
+    }
+
+    public static synchronized FluentLogger getLogger(String tagPrefix, String host, int port, int timeout,
+            int bufferCapacity, Reconnector reconnector) {
+        return factory.getLogger(tagPrefix, host, port, timeout, bufferCapacity, reconnector);
     }
 
     /**
