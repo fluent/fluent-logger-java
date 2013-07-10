@@ -131,6 +131,7 @@ public class TestRawSocketSender {
         final List[] elists = new List[2];
         final int[] ports = new int[2];
         ports[0] = 25227;
+        RawSocketSender rawSocketSender = new RawSocketSender("localhost", ports[0]);   // it should be failed to connect to fluentd
         elists[0] = new ArrayList<Event>();
         fluentds[0] = new MockFluentd(ports[0], new MockFluentd.MockProcess() {
             public void process(MessagePack msgpack, Socket socket) throws IOException {
@@ -170,7 +171,7 @@ public class TestRawSocketSender {
         // start senders
         Sender[] senders = new Sender[2];
         int[] counts = new int[2];
-        senders[0] = new RawSocketSender("localhost", ports[0]);
+        senders[0] = rawSocketSender;
         counts[0] = 10000;
         for (int i = 0; i < counts[0]; i++) {
             String tag = "tag:i";
