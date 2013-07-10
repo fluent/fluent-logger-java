@@ -43,13 +43,6 @@ configure your pom.xml as follows to use it:
       ...
     </dependencies>
 
-    <repositories>
-      <repository>
-        <id>fluentd.org</id>
-        <name>Fluent Maven2 Repository</name>
-        <url>http://fluentd.org/maven2</url>
-      </repository>
-    <repositories>
 
 ### Install from Github repository
 
@@ -64,7 +57,6 @@ directory.  File name will be fluent-logger-${logger.version}-jar-with-dependenc
 For more detail, see pom.xml.
 
 **Replace ${logger.version} with the current version of Fluent Logger for Java.**
-**The current version is 0.2.5.**
 
 ## Quickstart
 
