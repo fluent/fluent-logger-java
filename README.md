@@ -93,8 +93,8 @@ should be called only once.  By default, the logger assumes fluent daemon is
 launched locally.  You can also specify remote logger by passing the following 
 options.  
 
-  // for remote fluentd
-  private static FluentLogger LOG = FluentLogger.getLogger("app", "remotehost", port);
+    // for remote fluentd
+    private static FluentLogger LOG = FluentLogger.getLogger("app", "remotehost", port);
 
 Then, please create the events like this.  This will send the event to fluentd, 
 with tag 'app.follow' and the attributes 'from' and 'to'.
@@ -102,7 +102,7 @@ with tag 'app.follow' and the attributes 'from' and 'to'.
 Close method in FluentLogger class should be called explicitly when application 
 is finished.  The method close socket connection with the fluentd.
 
-  FluentLogger.close();
+    FluentLogger.close();
 
 ## License
 
