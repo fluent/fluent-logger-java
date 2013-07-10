@@ -1,4 +1,14 @@
-Release 0.2.9 - 20XX/XX/XX
+Release 0.2.10 - 2013/07/10
+  IMPROVEMENTS
+    Fixes server reconnection and new Reconnector
+      https://github.com/fluent/fluent-logger-java/pull/5
+
+  BUG FIXMES
+    Fixes stack overflow at FluentLoggerFactory#getLogger(String tagPrefix, String host, int port, int timeout, int bufferCapacity)
+
+Release 0.2.9 - 2013/05/09
+  IMPROVEMENTS
+    FluentLoggerFactory.getLogger() accepts 'tag' param
 
 Release 0.2.8 - 2013/01/15
   IMPROVEMENTS
