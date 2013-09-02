@@ -81,11 +81,11 @@ public class FluentLogger {
         return log(tag, data, timestamp);
     }
 
-    public boolean log(String tag, Map<String, Object> data) {
+    public boolean log(String tag, Object data) {
         return log(tag, data, 0);
     }
 
-    public boolean log(String tag, Map<String, Object> data, long timestamp) {
+    public boolean log(String tag, Object data, long timestamp) {
         String concatTag = null;
         if (tagPrefix == null || tagPrefix.length() == 0) {
             concatTag = tag;

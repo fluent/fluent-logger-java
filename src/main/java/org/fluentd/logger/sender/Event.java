@@ -18,6 +18,9 @@
 package org.fluentd.logger.sender;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.msgpack.MessageTypeException;
@@ -31,16 +34,16 @@ public class Event {
 
     public long timestamp;
 
-    public Map<String, Object> data;
+    public Object data;
 
     public Event() {
     }
 
-    public Event(String tag, Map<String, Object> data) {
+    public Event(String tag, Object data) {
         this(tag, System.currentTimeMillis() / 1000, data);
     }
 
-    public Event(String tag, long timestamp, Map<String, Object> data) {
+    public Event(String tag, long timestamp, Object data) {
         this.tag = tag;
         this.timestamp = timestamp;
         this.data = data;
@@ -68,25 +71,49 @@ public class Event {
             {
                 Templates.TString.write(pk, v.tag, required);
                 Templates.TLong.write(pk, v.timestamp, required);
-                pk.writeMapBegin(v.data.size());
-                {
-                    for (Map.Entry<String, Object> entry : v.data.entrySet()) {
-                        Templates.TString.write(pk, entry.getKey(), required);
-                        try {
-                            pk.write(entry.getValue());
-                        } catch (MessageTypeException e) {
-                            String val = entry.getValue().toString();
-                            Templates.TString.write(pk, val, required);
-                        }
-                    }
-                }
-                pk.writeMapEnd();
+                writeRec(pk, v.data, required);
             }
             pk.writeArrayEnd();
         }
 
         public Event read(Unpacker u, Event to, boolean required) throws IOException {
             throw new UnsupportedOperationException("Don't need the operation");
+        }
+
+        private void writeRec(Packer pk, Object data, boolean required) throws IOException {
+            Map<?, ?> map = null;
+            if(!(data instanceof Map)){
+                Map<String, Object> ret = new LinkedHashMap<String, Object>();
+                for(Method m : data.getClass().getMethods()){
+                    if(m.getDeclaringClass().equals(Object.class)) continue;
+                    if(!m.getName().startsWith("get")) continue;
+                    if(m.getParameterTypes().length != 0) continue;
+                    String name = m.getName().substring(3);
+                    if(name.length() == 0) continue;
+                    name = name.substring(0, 1).toLowerCase() + (name.length() == 1 ? "" : name.substring(1));
+                    try {
+                        ret.put(name, m.invoke(data));
+                    } catch (IllegalArgumentException e) {
+                    } catch (IllegalAccessException e) {
+                    } catch (InvocationTargetException e) {
+                    }
+                }
+                map = ret;
+            } else{
+                map = (Map<?, ?>)data;
+            }
+            pk.writeMapBegin(map.size());
+            {
+                for (Map.Entry<?, ?> entry : map.entrySet()) {
+                    Templates.TString.write(pk, entry.getKey().toString(), required);
+                    try {
+                        pk.write(entry.getValue());
+                    } catch (MessageTypeException e) {
+                        writeRec(pk, entry.getValue(), required);
+                    }
+                }
+            }
+            pk.writeMapEnd();
         }
     }
 }

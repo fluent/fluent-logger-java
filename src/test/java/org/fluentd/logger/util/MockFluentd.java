@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.fluentd.logger.sender.Event;
@@ -42,7 +43,7 @@ public class MockFluentd extends Thread {
                     for (int i = 0; i < size; i++) {
                         String key = (String) toObject(u, u.readValue());
                         Object value = toObject(u, u.readValue());
-                        to.data.put(key, value);
+                        ((Map<Object, Object>)to.data).put(key, value);
                     }
                 }
                 u.readMapEnd();

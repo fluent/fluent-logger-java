@@ -67,14 +67,14 @@ public class TestRawSocketSender {
         {
             Event e = elist.get(0);
             assertEquals("tag.label1", e.tag);
-            assertEquals("t1v1", e.data.get("t1k1"));
-            assertEquals("t1v2", e.data.get("t1k2"));
+            assertEquals("t1v1", ((Map<?, ?>)e.data).get("t1k1"));
+            assertEquals("t1v2", ((Map<?, ?>)e.data).get("t1k2"));
         }
         {
             Event e = elist.get(1);
             assertEquals("tag.label2", e.tag);
-            assertEquals("t2v1", e.data.get("t2k1"));
-            assertEquals("t2v2", e.data.get("t2k2"));
+            assertEquals("t2v1", ((Map<?, ?>)e.data).get("t2k1"));
+            assertEquals("t2v2", ((Map<?, ?>)e.data).get("t2k2"));
         }
     }
 
