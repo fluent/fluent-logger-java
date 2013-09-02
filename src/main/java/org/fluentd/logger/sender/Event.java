@@ -20,7 +20,6 @@ package org.fluentd.logger.sender;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.math.BigInteger;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
