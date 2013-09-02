@@ -81,6 +81,14 @@ public class FluentLogger {
         return log(tag, data, timestamp);
     }
 
+    public boolean log(String tag, Map<String, Object> data) {
+        return log(tag, (Object)data, 0);
+    }
+
+    public boolean log(String tag, Map<String, Object> data, long timestamp) {
+        return log(tag, (Object)data, timestamp);
+    }
+
     public boolean log(String tag, Object data) {
         return log(tag, data, 0);
     }

@@ -20,6 +20,7 @@ package org.fluentd.logger.sender;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigInteger;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -71,7 +72,15 @@ public class Event {
             {
                 Templates.TString.write(pk, v.tag, required);
                 Templates.TLong.write(pk, v.timestamp, required);
-                writeRec(pk, v.data, required);
+                if(v.data instanceof Map){
+                    writeMap(pk, (Map<?, ?>)v.data, required);
+                } else{
+                    try{
+                        pk.write(v.data);
+                    } catch (MessageTypeException e) {
+                        writeObj(pk, v.data, required);
+                    }
+                }
             }
             pk.writeArrayEnd();
         }
@@ -80,36 +89,39 @@ public class Event {
             throw new UnsupportedOperationException("Don't need the operation");
         }
 
-        private void writeRec(Packer pk, Object data, boolean required) throws IOException {
-            Map<?, ?> map = null;
-            if(!(data instanceof Map)){
-                Map<String, Object> ret = new LinkedHashMap<String, Object>();
-                for(Method m : data.getClass().getMethods()){
-                    if(m.getDeclaringClass().equals(Object.class)) continue;
-                    if(!m.getName().startsWith("get")) continue;
-                    if(m.getParameterTypes().length != 0) continue;
-                    String name = m.getName().substring(3);
-                    if(name.length() == 0) continue;
-                    name = name.substring(0, 1).toLowerCase() + (name.length() == 1 ? "" : name.substring(1));
-                    try {
-                        ret.put(name, m.invoke(data));
-                    } catch (IllegalArgumentException e) {
-                    } catch (IllegalAccessException e) {
-                    } catch (InvocationTargetException e) {
-                    }
+        private void writeObj(Packer pk, Object data, boolean required) throws IOException {
+            Map<String, Object> map = new LinkedHashMap<String, Object>();
+            for(Method m : data.getClass().getMethods()){
+                if(m.getDeclaringClass().equals(Object.class)) continue;
+                if(!m.getName().startsWith("get")) continue;
+                if(m.getParameterTypes().length != 0) continue;
+                String name = m.getName().substring(3);
+                if(name.length() == 0) continue;
+                name = name.substring(0, 1).toLowerCase() + (name.length() == 1 ? "" : name.substring(1));
+                try {
+                    map.put(name, m.invoke(data));
+                } catch (IllegalArgumentException e) {
+                } catch (IllegalAccessException e) {
+                } catch (InvocationTargetException e) {
                 }
-                map = ret;
-            } else{
-                map = (Map<?, ?>)data;
             }
+            writeMap(pk, map, required);
+        }
+
+        private <K, V> void writeMap(Packer pk, Map<K, V> map, boolean required) throws IOException {
             pk.writeMapBegin(map.size());
             {
                 for (Map.Entry<?, ?> entry : map.entrySet()) {
                     Templates.TString.write(pk, entry.getKey().toString(), required);
-                    try {
-                        pk.write(entry.getValue());
-                    } catch (MessageTypeException e) {
-                        writeRec(pk, entry.getValue(), required);
+                    Object value = entry.getValue();
+                    if(value instanceof Map<?, ?>){
+                        writeMap(pk, (Map<?, ?>)value, required);
+                    } else{
+                        try {
+                            pk.write(entry.getValue());
+                        } catch (MessageTypeException e) {
+                            writeObj(pk, entry.getValue(), required);
+                        }
                     }
                 }
             }
