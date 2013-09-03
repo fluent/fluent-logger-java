@@ -90,19 +90,29 @@ public class Event {
 
         private void writeObj(Packer pk, Object data, boolean required) throws IOException {
             Map<String, Object> map = new LinkedHashMap<String, Object>();
-            for(Method m : data.getClass().getMethods()){
-                if(m.getDeclaringClass().equals(Object.class)) continue;
-                if(!m.getName().startsWith("get")) continue;
-                if(m.getParameterTypes().length != 0) continue;
-                String name = m.getName().substring(3);
-                if(name.length() == 0) continue;
-                name = name.substring(0, 1).toLowerCase() + (name.length() == 1 ? "" : name.substring(1));
-                try {
-                    map.put(name, m.invoke(data));
-                } catch (IllegalArgumentException e) {
-                } catch (IllegalAccessException e) {
-                } catch (InvocationTargetException e) {
+            Class<?> clazz = data.getClass();
+            while(!clazz.equals(Object.class)){
+                for(Method m : clazz.getDeclaredMethods()){
+                    if(m.getDeclaringClass().equals(Object.class)) continue;
+                    if(m.getParameterTypes().length != 0) continue;
+                    String name = null;
+                    if(m.getName().startsWith("get")){
+                        name = m.getName().substring(3);
+                    } else if(m.getName().startsWith("is") && m.getReturnType().equals(boolean.class)){
+                        name = m.getName().substring(2);
+                    } else{
+                        continue;
+                    }
+                    if(name.length() == 0) continue;
+                    name = name.substring(0, 1).toLowerCase() + (name.length() == 1 ? "" : name.substring(1));
+                    try {
+                        map.put(name, m.invoke(data));
+                    } catch (IllegalArgumentException e) {
+                    } catch (IllegalAccessException e) {
+                    } catch (InvocationTargetException e) {
+                    }
                 }
+                clazz = clazz.getSuperclass();
             }
             writeMap(pk, map, required);
         }
