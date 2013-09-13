@@ -1,15 +1,21 @@
 package org.fluentd.logger.sender;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.fluentd.logger.util.MockFluentd;
 import org.junit.Test;
@@ -204,5 +210,31 @@ public class TestRawSocketSender {
         // check data
         assertEquals(counts[0], elists[0].size());
         assertEquals(counts[1], elists[1].size());
+    }
+
+    @Test
+    public void testTimeout() throws InterruptedException {
+        final AtomicBoolean socketFinished = new AtomicBoolean(false);
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                RawSocketSender socketSender = null;
+                try {
+                    // try to connect to test network
+                    socketSender = new RawSocketSender("192.0.2.1", 24224, 200, 8 * 1024);
+                }
+                finally {
+                    socketFinished.set(true);
+                    if (socketSender != null) {
+                        socketSender.close();
+                    }
+                }
+            }
+        });
+
+        TimeUnit.MILLISECONDS.sleep(400);
+        assertTrue(socketFinished.get());
+        executor.shutdownNow();
     }
 }
