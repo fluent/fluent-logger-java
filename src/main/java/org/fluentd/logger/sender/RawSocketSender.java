@@ -86,8 +86,8 @@ public class RawSocketSender implements Sender {
     private void connect() throws IOException {
         try {
             socket = new Socket();
-            socket.connect(server);
             socket.setSoTimeout(timeout); // the timeout value to be used in milliseconds
+            socket.connect(server);
             out = new BufferedOutputStream(socket.getOutputStream());
         } catch (IOException e) {
             throw e;
