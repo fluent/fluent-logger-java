@@ -67,14 +67,14 @@ public class TestRawSocketSender {
         {
             Event e = elist.get(0);
             assertEquals("tag.label1", e.tag);
-            assertEquals("t1v1", e.data.get("t1k1"));
-            assertEquals("t1v2", e.data.get("t1k2"));
+            assertEquals("t1v1", ((Map<?, ?>)e.data).get("t1k1"));
+            assertEquals("t1v2", ((Map<?, ?>)e.data).get("t1k2"));
         }
         {
             Event e = elist.get(1);
             assertEquals("tag.label2", e.tag);
-            assertEquals("t2v1", e.data.get("t2k1"));
-            assertEquals("t2v2", e.data.get("t2k2"));
+            assertEquals("t2v1", ((Map<?, ?>)e.data).get("t2k1"));
+            assertEquals("t2v2", ((Map<?, ?>)e.data).get("t2k2"));
         }
     }
 
@@ -204,5 +204,153 @@ public class TestRawSocketSender {
         // check data
         assertEquals(counts[0], elists[0].size());
         assertEquals(counts[1], elists[1].size());
+    }
+
+    @Test
+    public void testNormal04_SOMapInSOMap() throws Exception {
+        List<Event> elist = new ArrayList<Event>();
+        int port = 25225;
+        MockFluentd mock = createMock(elist, port);
+        try{
+            // start senders
+            Sender sender = new RawSocketSender("localhost", port);
+            Map<String, Object> data = new HashMap<String, Object>();
+            data.put("t1k1", "t1v1");
+            data.put("t1k2", "t1v2");
+            Map<String, Object> data2 = new HashMap<String, Object>();
+            data2.put("t2k1", "t2v1");
+            data2.put("t2k2", "t2v2");
+            data.put("data2", data2);
+            sender.emit("tag.label1", data);
+            // close sender sockets
+            sender.close();
+        } finally{
+            // close mock server sockets
+            mock.close();
+        }
+
+        // wait for unpacking event data on fluentd
+        Thread.sleep(1000);
+
+        // check data
+        assertEquals(1, elist.size());
+        {
+            Event e = elist.get(0);
+            assertEquals("tag.label1", e.tag);
+            assertEquals("t1v1", ((Map<?, ?>)e.data).get("t1k1"));
+            assertEquals("t1v2", ((Map<?, ?>)e.data).get("t1k2"));
+            Map<?, ?> data2 = (Map<?, ?>)((Map<?, ?>)e.data).get("data2");
+            assertEquals("t2v1", data2.get("t2k1"));
+            assertEquals("t2v2", data2.get("t2k2"));
+        }
+    }
+
+    @Test
+    public void testNormal05_WrappersAndString() throws Exception {
+        List<Event> elist = new ArrayList<Event>();
+        int port = 25225;
+        MockFluentd mock = createMock(elist, port);
+        try{
+            // start senders
+            Sender sender = new RawSocketSender("localhost", port);
+            sender.emit("tag.label1", (short)1);
+            sender.emit("tag.label1", 2);
+            sender.emit("tag.label1", 3L);
+            sender.emit("tag.label1", 4.4f);
+            sender.emit("tag.label1", 5.5);
+            sender.emit("tag.label1", true);
+            sender.emit("tag.label1", 'A');
+            sender.emit("tag.label1", "hello");
+            // close sender sockets
+            sender.close();
+        } finally{
+            // close mock server sockets
+            mock.close();
+        }
+
+        // wait for unpacking event data on fluentd
+        Thread.sleep(1000);
+
+        // check data
+        assertEquals(8, elist.size());
+        {
+            int i = 0;
+            assertEquals((long)1, elist.get(i++).data);
+            assertEquals((long)2, elist.get(i++).data);
+            assertEquals((long)3, elist.get(i++).data);
+            assertEquals(4.4, (Double)elist.get(i++).data, 0.001);
+            assertEquals(5.5, (Double)elist.get(i++).data, 0.001);
+            assertEquals(true, elist.get(i++).data);
+            assertEquals((long)'A', elist.get(i++).data);
+            assertEquals("hello", elist.get(i++).data);
+        }
+    }
+
+    public static class Msg{
+        public Msg() {
+        }
+        public Msg(String name, int age, boolean live) {
+            this.name = name;
+            this.age = age;
+            this.live = live;
+        }
+        public int getAge() {
+            return age;
+        }
+        public String getName() {
+            return name;
+        }
+        public boolean isLive() {
+            return live;
+        }
+
+        private String name;
+        private int age;
+        private boolean live;
+    }
+    @Test
+    public void testNormal06_Object() throws Exception {
+        List<Event> elist = new ArrayList<Event>();
+        int port = 25225;
+        MockFluentd mock = createMock(elist, port);
+        try{
+            Sender sender = new RawSocketSender("localhost", port);
+            sender.emit("tag.label1", new Msg("suzuki", 30, true));
+            sender.close();
+        } finally{
+            mock.close();
+        }
+
+        Thread.sleep(1000);
+
+        // check data
+        assertEquals(1, elist.size());
+        {
+            Map<?, ?> m = (Map<?, ?>)elist.get(0).data;
+            assertEquals("suzuki", m.get("name"));
+            assertEquals((long)30, m.get("age"));
+            assertEquals(true, m.get("live"));
+        }
+    }
+
+    private MockFluentd createMock(final List<Event> elist, int port) throws IOException{
+        // start mock fluentd
+        MockFluentd fluentd = new MockFluentd(port, new MockFluentd.MockProcess() {
+            public void process(MessagePack msgpack, Socket socket) throws IOException {
+                BufferedInputStream in = new BufferedInputStream(socket.getInputStream());
+                try {
+                    Unpacker unpacker = msgpack.createUnpacker(in);
+                    while (true) {
+                        Event e = unpacker.read(Event.class);
+                        elist.add(e);
+                    }
+                    //socket.close();
+                } catch (EOFException e) {
+                    // ignore
+                }
+            }
+        });
+        fluentd.start();
+        return fluentd;
     }
 }

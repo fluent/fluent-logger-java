@@ -125,11 +125,11 @@ public class RawSocketSender implements Sender {
         }
     }
 
-    public boolean emit(String tag, Map<String, Object> data) {
+    public boolean emit(String tag, Object data) {
         return emit(tag, System.currentTimeMillis() / 1000, data);
     }
 
-    public boolean emit(String tag, long timestamp, Map<String, Object> data) {
+    public boolean emit(String tag, long timestamp, Object data) {
         return emit(new Event(tag, timestamp, data));
     }
 

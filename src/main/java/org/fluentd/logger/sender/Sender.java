@@ -17,12 +17,10 @@
 //
 package org.fluentd.logger.sender;
 
-import java.util.Map;
-
 public interface Sender {
-    boolean emit(String tag, Map<String, Object> data);
+    boolean emit(String tag, Object data);
 
-    boolean emit(String tag, long timestamp, Map<String, Object> data);
+    boolean emit(String tag, long timestamp, Object data);
 
     void flush();
 

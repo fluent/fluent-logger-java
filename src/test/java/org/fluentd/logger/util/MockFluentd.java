@@ -4,12 +4,16 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.fluentd.logger.sender.Event;
 import org.msgpack.MessagePack;
 import org.msgpack.packer.Packer;
 import org.msgpack.template.Templates;
+import org.msgpack.type.ArrayValue;
+import org.msgpack.type.RawValue;
 import org.msgpack.type.Value;
 import org.msgpack.unpacker.Unpacker;
 
@@ -36,16 +40,7 @@ public class MockFluentd extends Thread {
             {
                 to.tag = Templates.TString.read(u, null, required);
                 to.timestamp = Templates.TLong.read(u, null, required);
-                int size = u.readMapBegin();
-                to.data = new HashMap<String, Object>(size);
-                {
-                    for (int i = 0; i < size; i++) {
-                        String key = (String) toObject(u, u.readValue());
-                        Object value = toObject(u, u.readValue());
-                        to.data.put(key, value);
-                    }
-                }
-                u.readMapEnd();
+                to.data = toObject(u, u.readValue());
             }
             u.readArrayEnd();
             return to;
@@ -64,7 +59,14 @@ public class MockFluentd extends Thread {
             } else if (v.isIntegerValue()) {
                 return v.asIntegerValue().getLong(); // long only
             } else if (v.isMapValue()) {
-                throw new UnsupportedOperationException();
+                Map<String, Object> map = new LinkedHashMap<String, Object>();
+                Value[] vals = v.asMapValue().asMapValue().getKeyValueArray();
+                for(int i = 0; i < (vals.length / 2); i++){
+                    String key = vals[i * 2].asRawValue().getString();
+                    Object value = toObject(u, vals[i * 2 + 1]);
+                    map.put(key, value);
+                }
+                return map;
             } else if (v.isArrayValue()) {
                 throw new UnsupportedOperationException();
             } else {

@@ -17,7 +17,6 @@
 //
 package org.fluentd.logger.sender;
 
-import java.util.Map;
 
 public class NullSender implements Sender {
 
@@ -25,12 +24,12 @@ public class NullSender implements Sender {
     }
 
     @Override
-    public boolean emit(String tag, Map<String, Object> data) {
+    public boolean emit(String tag, Object data) {
         return emit(tag, System.currentTimeMillis() / 1000, data);
     }
 
     @Override
-    public boolean emit(String tag, long timestamp, Map<String, Object> data) {
+    public boolean emit(String tag, long timestamp, Object data) {
         return true;
     }
 
