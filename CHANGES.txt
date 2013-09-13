@@ -1,6 +1,6 @@
-Release 0.2.11 - 20XX/XX/XX
+Release 0.2.11 - 2013/09/13
   BUG FIXMES
-    Fixes inefficient Socket#setSoTimeout(..) method call within RawSocketSender class
+    Fixes RawSocketSender#connect()'s timeout
 
 Release 0.2.10 - 2013/07/10
   IMPROVEMENTS
