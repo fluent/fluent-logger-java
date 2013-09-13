@@ -43,13 +43,6 @@ configure your pom.xml as follows to use it:
       ...
     </dependencies>
 
-    <repositories>
-      <repository>
-        <id>fluentd.org</id>
-        <name>Fluent Maven2 Repository</name>
-        <url>http://fluentd.org/maven2</url>
-      </repository>
-    <repositories>
 
 ### Install from Github repository
 
@@ -64,7 +57,6 @@ directory.  File name will be fluent-logger-${logger.version}-jar-with-dependenc
 For more detail, see pom.xml.
 
 **Replace ${logger.version} with the current version of Fluent Logger for Java.**
-**The current version is 0.2.5.**
 
 ## Quickstart
 
@@ -93,8 +85,8 @@ should be called only once.  By default, the logger assumes fluent daemon is
 launched locally.  You can also specify remote logger by passing the following 
 options.  
 
-  // for remote fluentd
-  private static FluentLogger LOG = FluentLogger.getLogger("app", "remotehost", port);
+    // for remote fluentd
+    private static FluentLogger LOG = FluentLogger.getLogger("app", "remotehost", port);
 
 Then, please create the events like this.  This will send the event to fluentd, 
 with tag 'app.follow' and the attributes 'from' and 'to'.
@@ -102,7 +94,7 @@ with tag 'app.follow' and the attributes 'from' and 'to'.
 Close method in FluentLogger class should be called explicitly when application 
 is finished.  The method close socket connection with the fluentd.
 
-  FluentLogger.close();
+    FluentLogger.close();
 
 ## License
 
