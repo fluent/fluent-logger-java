@@ -312,6 +312,7 @@ public class TestRawSocketSender {
     public void testNormal06_Object() throws Exception {
         List<Event> elist = new ArrayList<Event>();
         int port = 25225;
+        EventTemplate.INSTANCE = new MapStyleEventTemplate();
         MockFluentd mock = createMock(elist, port);
         try{
             Sender sender = new RawSocketSender("localhost", port);

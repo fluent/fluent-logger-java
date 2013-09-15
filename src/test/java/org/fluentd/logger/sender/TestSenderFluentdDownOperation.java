@@ -7,10 +7,7 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.fluentd.logger.sender.RawSocketSender;
-import org.fluentd.logger.sender.Sender;
 import org.fluentd.logger.util.MockFluentd;
-import org.fluentd.logger.util.MockFluentd.MockProcess;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.msgpack.MessagePack;
@@ -25,7 +22,7 @@ public class TestSenderFluentdDownOperation {
     public void testFluentdDownOperation01() throws Exception {
         int port = 25225;
         MessagePack msgpack = new MessagePack();
-        msgpack.register(Event.class, Event.EventTemplate.INSTANCE);
+        msgpack.register(Event.class, EventTemplate.INSTANCE);
         BufferPacker packer = msgpack.createBufferPacker();
         long timestamp = System.currentTimeMillis() / 1000;
 
@@ -60,7 +57,7 @@ public class TestSenderFluentdDownOperation {
     public void testFluentdDownOperation02()throws Exception {
         int port = 25225;
         MessagePack msgpack = new MessagePack();
-        msgpack.register(Event.class, Event.EventTemplate.INSTANCE);
+        msgpack.register(Event.class, EventTemplate.INSTANCE);
         BufferPacker packer = msgpack.createBufferPacker();
         long timestamp = System.currentTimeMillis();
 

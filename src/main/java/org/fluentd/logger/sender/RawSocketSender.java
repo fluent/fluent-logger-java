@@ -23,7 +23,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
-import java.util.Map;
 import java.util.logging.Level;
 
 import org.msgpack.MessagePack;
@@ -63,7 +62,7 @@ public class RawSocketSender implements Sender {
 
     public RawSocketSender(String host, int port, int timeout, int bufferCapacity, Reconnector reconnector) {
         msgpack = new MessagePack();
-        msgpack.register(Event.class, Event.EventTemplate.INSTANCE);
+        msgpack.register(Event.class, EventTemplate.INSTANCE);
         pendings = ByteBuffer.allocate(bufferCapacity);
         server = new InetSocketAddress(host, port);
         this.reconnector = reconnector;

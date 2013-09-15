@@ -3,17 +3,14 @@ package org.fluentd.logger.util;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.fluentd.logger.sender.DefaultEventTemplate;
 import org.fluentd.logger.sender.Event;
 import org.msgpack.MessagePack;
-import org.msgpack.packer.Packer;
 import org.msgpack.template.Templates;
-import org.msgpack.type.ArrayValue;
-import org.msgpack.type.RawValue;
 import org.msgpack.type.Value;
 import org.msgpack.unpacker.Unpacker;
 
@@ -23,13 +20,8 @@ public class MockFluentd extends Thread {
         public void process(MessagePack msgpack, Socket socket) throws IOException;
     }
 
-    public static class MockEventTemplate extends Event.EventTemplate {
+    public static class MockEventTemplate extends DefaultEventTemplate {
         public static MockEventTemplate INSTANCE = new MockEventTemplate();
-
-        public void write(Packer pk, Event v, boolean required) throws IOException {
-            throw new UnsupportedOperationException("don't need operation");
-        }
-
         public Event read(Unpacker u, Event to, boolean required) throws IOException {
             if (!required && u.trySkipNil()) {
                 return null;
