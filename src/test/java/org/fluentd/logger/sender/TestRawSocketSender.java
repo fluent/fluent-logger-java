@@ -1,13 +1,14 @@
 package org.fluentd.logger.sender;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.fluentd.logger.util.MockFluentd;
+import org.junit.Test;
+import org.msgpack.MessagePack;
+import org.msgpack.unpacker.Unpacker;
 
 import java.io.BufferedInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,18 +18,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.fluentd.logger.util.MockFluentd;
-import org.junit.Test;
-import org.msgpack.MessagePack;
-import org.msgpack.unpacker.Unpacker;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 public class TestRawSocketSender {
 
+
     @Test
     public void testNormal01() throws Exception {
         // start mock fluentd
-        int port = 25225;
+        int port = MockFluentd.randomPort();
         final List<Event> elist = new ArrayList<Event>();
         MockFluentd fluentd = new MockFluentd(port, new MockFluentd.MockProcess() {
             public void process(MessagePack msgpack, Socket socket) throws IOException {
@@ -84,10 +84,12 @@ public class TestRawSocketSender {
         }
     }
 
+
+
     @Test
     public void testNormal02() throws Exception {
         // start mock fluentd
-        int port = 25226;
+        int port = MockFluentd.randomPort(); // Use a random port available
         final List<Event> elist = new ArrayList<Event>();
         MockFluentd fluentd = new MockFluentd(port, new MockFluentd.MockProcess() {
             public void process(MessagePack msgpack, Socket socket) throws IOException {
@@ -136,7 +138,7 @@ public class TestRawSocketSender {
         final MockFluentd[] fluentds = new MockFluentd[2];
         final List[] elists = new List[2];
         final int[] ports = new int[2];
-        ports[0] = 25227;
+        ports[0] = MockFluentd.randomPort();
         RawSocketSender rawSocketSender = new RawSocketSender("localhost", ports[0]);   // it should be failed to connect to fluentd
         elists[0] = new ArrayList<Event>();
         fluentds[0] = new MockFluentd(ports[0], new MockFluentd.MockProcess() {
@@ -155,7 +157,7 @@ public class TestRawSocketSender {
             }
         });
         fluentds[0].start();
-        ports[1] = 25228;
+        ports[1] = MockFluentd.randomPort();
         elists[1] = new ArrayList<Event>();
         fluentds[1] = new MockFluentd(ports[1], new MockFluentd.MockProcess() {
             public void process(MessagePack msgpack, Socket socket) throws IOException {
