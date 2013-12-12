@@ -17,6 +17,8 @@
 //
 package org.fluentd.logger.sender;
 
+import org.msgpack.MessagePack;
+
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -25,8 +27,6 @@ import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.logging.Level;
-
-import org.msgpack.MessagePack;
 
 public class RawSocketSender implements Sender {
     private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(RawSocketSender.class
@@ -76,9 +76,8 @@ public class RawSocketSender implements Sender {
         try {
             connect();
         } catch (IOException e) {
-            LOG.severe("Failed to connect fluentd: " + server.toString());
-            LOG.severe("Connection will be retried");
-            e.printStackTrace();
+            LOG.log(Level.SEVERE, "Failed to connect fluentd: " + server.toString(), e);
+            LOG.warning("Connection will be retried");
             close();
         }
     }
@@ -142,8 +141,7 @@ public class RawSocketSender implements Sender {
             // serialize tag, timestamp and data
             bytes = msgpack.write(event);
         } catch (IOException e) {
-            LOG.severe("Cannot serialize event: " + event);
-            e.printStackTrace();
+            LOG.log(Level.SEVERE, "Cannot serialize event: " + event, e);
             return false;
         }
 

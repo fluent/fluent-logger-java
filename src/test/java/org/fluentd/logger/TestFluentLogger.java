@@ -1,18 +1,5 @@
 package org.fluentd.logger;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.BufferedInputStream;
-import java.io.EOFException;
-import java.io.IOException;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
 import org.fluentd.logger.sender.Event;
 import org.fluentd.logger.sender.NullSender;
 import org.fluentd.logger.util.MockFluentd;
@@ -20,12 +7,21 @@ import org.junit.Test;
 import org.msgpack.MessagePack;
 import org.msgpack.unpacker.Unpacker;
 
+import java.io.BufferedInputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.net.Socket;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.assertEquals;
+
 public class TestFluentLogger {
 
     @Test
     public void testNormal01() throws Exception {
         // start mock fluentd
-        int port = 25225;
+        int port = MockFluentd.randomPort();
         String host = "localhost";
         final List<Event> elist = new ArrayList<Event>();
         MockFluentd fluentd = new MockFluentd(port, new MockFluentd.MockProcess() {
@@ -80,7 +76,7 @@ public class TestFluentLogger {
         int loggerCount = 3;
 
         // start mock fluentd
-        int port = 25225;
+        int port = MockFluentd.randomPort();
         String host = "localhost";
         final List[] elists = new List[loggerCount];
         elists[0] = new ArrayList<Event>();
@@ -170,7 +166,7 @@ public class TestFluentLogger {
     @Test
     public void testReconnection() throws Exception {
         // start mock fluentd
-        int port = 25225;
+        int port = MockFluentd.randomPort();
         String host = "localhost";
         final List<Event> elist1 = new ArrayList<Event>();
         MockFluentd fluentd1 = new MockFluentd(port, new MockFluentd.MockProcess() {
