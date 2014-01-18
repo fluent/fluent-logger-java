@@ -11,9 +11,11 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MockFluentd extends Thread {
+    private ConcurrentLinkedQueue<Socket> clientSockets = new ConcurrentLinkedQueue<Socket>();
 
     public static interface MockProcess {
         public void process(MessagePack msgpack, Socket socket) throws IOException;
@@ -100,6 +102,8 @@ public class MockFluentd extends Thread {
         while (!finished.get()) {
             try {
                 final Socket socket = serverSocket.accept();
+                socket.setSoLinger(true, 0);
+                clientSockets.add(socket);
                 Runnable r = new Runnable() {
                     public void run() {
                         try {
@@ -122,6 +126,17 @@ public class MockFluentd extends Thread {
         finished.set(true);
         if (serverSocket != null) {
             serverSocket.close();
+        }
+    }
+
+    public void closeClientSockets() {
+        Socket s = null;
+        while ((s = clientSockets.poll()) != null) {
+            try {
+                s.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

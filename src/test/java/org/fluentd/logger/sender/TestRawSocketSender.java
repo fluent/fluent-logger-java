@@ -1,6 +1,7 @@
 package org.fluentd.logger.sender;
 
 import org.fluentd.logger.util.MockFluentd;
+import org.fluentd.logger.util.MockFluentd.MockProcess;
 import org.junit.Test;
 import org.msgpack.MessagePack;
 import org.msgpack.unpacker.Unpacker;
@@ -13,6 +14,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -241,5 +244,89 @@ public class TestRawSocketSender {
         TimeUnit.MILLISECONDS.sleep(400);
         assertTrue(socketFinished.get());
         executor.shutdownNow();
+    }
+
+    @Test
+    public void testBufferingAndResending() throws InterruptedException, IOException {
+        final ConcurrentLinkedQueue<Event> readEvents = new ConcurrentLinkedQueue<Event>();
+        final CountDownLatch countDownLatch = new CountDownLatch(4);
+        int port = MockFluentd.randomPort();
+        MockProcess mockProcess = new MockFluentd.MockProcess() {
+            public void process(MessagePack msgpack, Socket socket) throws IOException {
+                BufferedInputStream in = new BufferedInputStream(socket.getInputStream());
+                try {
+                    Unpacker unpacker = msgpack.createUnpacker(in);
+                    while (true) {
+                        Event e = unpacker.read(Event.class);
+                        readEvents.add(e);
+                        countDownLatch.countDown();
+                    }
+                } catch (EOFException e) {
+                    // e.printStackTrace();
+                }
+            }
+        };
+
+        MockFluentd fluentd = new MockFluentd(port, mockProcess);
+        fluentd.start();
+
+        Sender sender = new RawSocketSender("localhost", port);
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.put("key0", "v0");
+        sender.emit("tag0", data);
+
+        // close fluentd to make the next sending failed
+        TimeUnit.MILLISECONDS.sleep(500);
+
+        fluentd.closeClientSockets();
+
+        TimeUnit.MILLISECONDS.sleep(500);
+
+        data = new HashMap<String, Object>();
+        data.put("key0", "v1");
+        sender.emit("tag0", data);
+
+        // wait to avoid the suppression of reconnection
+        TimeUnit.MILLISECONDS.sleep(500);
+
+        data = new HashMap<String, Object>();
+        data.put("key0", "v2");
+        sender.emit("tag0", data);
+
+        data = new HashMap<String, Object>();
+        data.put("key0", "v3");
+        sender.emit("tag0", data);
+
+        countDownLatch.await(500, TimeUnit.MILLISECONDS);
+
+        sender.close();
+
+        fluentd.close();
+
+        assertEquals(4, readEvents.size());
+
+        Event event = readEvents.poll();
+        assertEquals("tag0", event.tag);
+        assertEquals(1, event.data.size());
+        assertTrue(event.data.keySet().contains("key0"));
+        assertTrue(event.data.values().contains("v0"));
+
+        event = readEvents.poll();
+        assertEquals("tag0", event.tag);
+        assertEquals(1, event.data.size());
+        assertTrue(event.data.keySet().contains("key0"));
+        assertTrue(event.data.values().contains("v1"));
+
+        event = readEvents.poll();
+        assertEquals("tag0", event.tag);
+        assertEquals(1, event.data.size());
+        assertTrue(event.data.keySet().contains("key0"));
+        assertTrue(event.data.values().contains("v2"));
+
+        event = readEvents.poll();
+        assertEquals("tag0", event.tag);
+        assertEquals(1, event.data.size());
+        assertTrue(event.data.keySet().contains("key0"));
+        assertTrue(event.data.values().contains("v3"));
     }
 }

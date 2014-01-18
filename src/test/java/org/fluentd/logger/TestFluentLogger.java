@@ -171,7 +171,6 @@ public class TestFluentLogger {
         final List<Event> elist1 = new ArrayList<Event>();
         MockFluentd fluentd1 = new MockFluentd(port, new MockFluentd.MockProcess() {
             public void process(MessagePack msgpack, Socket socket) throws IOException {
-                socket.setSoLinger(true, 0);
                 BufferedInputStream in = new BufferedInputStream(socket.getInputStream());
                 try {
                     Unpacker unpacker = msgpack.createUnpacker(in);
@@ -198,6 +197,9 @@ public class TestFluentLogger {
             data.put("k2", "v2");
             logger.log("test01", data);
         }
+
+        TimeUnit.MILLISECONDS.sleep(500);
+        fluentd1.closeClientSockets();
         fluentd1.close();
 
         TimeUnit.MILLISECONDS.sleep(500);
@@ -242,7 +244,7 @@ public class TestFluentLogger {
         fluentd2.close();
 
         // wait for unpacking event data on fluentd
-        Thread.sleep(1000);
+        TimeUnit.MILLISECONDS.sleep(500);
 
         // check data
         assertEquals(1, elist1.size());
