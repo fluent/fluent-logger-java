@@ -18,6 +18,8 @@
 package org.fluentd.logger.sender;
 
 import org.msgpack.MessagePack;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -26,11 +28,10 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.util.Map;
-import java.util.logging.Level;
 
 public class RawSocketSender implements Sender {
-    private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(RawSocketSender.class
-            .getName());
+
+    private static final Logger LOG = LoggerFactory.getLogger(RawSocketSender.class);
 
     private MessagePack msgpack;
 
@@ -76,8 +77,8 @@ public class RawSocketSender implements Sender {
         try {
             connect();
         } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Failed to connect fluentd: " + server.toString(), e);
-            LOG.warning("Connection will be retried");
+            LOG.error("Failed to connect fluentd: " + server.toString(), e);
+            LOG.warn("Connection will be retried");
             close();
         }
     }
@@ -132,8 +133,8 @@ public class RawSocketSender implements Sender {
     }
 
     protected boolean emit(Event event) {
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine(String.format("Created %s", new Object[] { event }));
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(String.format("Created %s", new Object[]{event}));
         }
 
         byte[] bytes = null;
@@ -141,7 +142,7 @@ public class RawSocketSender implements Sender {
             // serialize tag, timestamp and data
             bytes = msgpack.write(event);
         } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Cannot serialize event: " + event, e);
+            LOG.error("Cannot serialize event: " + event, e);
             return false;
         }
 
@@ -152,7 +153,7 @@ public class RawSocketSender implements Sender {
     private synchronized boolean send(byte[] bytes) {
         // buffering
         if (pendings.position() + bytes.length > pendings.capacity()) {
-            LOG.severe("Cannot send logs to " + server.toString());
+            LOG.error("Cannot send logs to " + server.toString());
             return false;
         }
         pendings.put(bytes);
@@ -178,7 +179,7 @@ public class RawSocketSender implements Sender {
             clearBuffer();
             reconnector.clearErrorHistory();
         } catch (IOException e) {
-            LOG.throwing(this.getClass().getName(), "flush", e);
+            LOG.error(this.getClass().getName(), "flush", e);
             reconnector.addErrorHistory(System.currentTimeMillis());
         }
     }

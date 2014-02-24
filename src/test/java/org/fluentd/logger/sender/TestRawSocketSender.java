@@ -5,6 +5,8 @@ import org.fluentd.logger.util.MockFluentd.MockProcess;
 import org.junit.Test;
 import org.msgpack.MessagePack;
 import org.msgpack.unpacker.Unpacker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.EOFException;
@@ -28,6 +30,8 @@ import static org.junit.Assert.assertTrue;
 public class TestRawSocketSender {
 
     static {
+        Logger l = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+
         System.setProperty("java.util.logging.SimpleFormatter.format", "%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS %4$s %2$s %5$s%n");
     }
 
