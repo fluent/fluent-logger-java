@@ -222,6 +222,7 @@ public class TestRawSocketSender {
     public void testTimeout() throws InterruptedException {
         final AtomicBoolean socketFinished = new AtomicBoolean(false);
         ExecutorService executor = Executors.newSingleThreadExecutor();
+
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -231,15 +232,17 @@ public class TestRawSocketSender {
                     socketSender = new RawSocketSender("192.0.2.1", 24224, 200, 8 * 1024);
                 }
                 finally {
-                    socketFinished.set(true);
                     if (socketSender != null) {
                         socketSender.close();
                     }
+                    socketFinished.set(true);
                 }
             }
         });
 
-        TimeUnit.MILLISECONDS.sleep(400);
+        while(!socketFinished.get())
+            Thread.yield();
+
         assertTrue(socketFinished.get());
         executor.shutdownNow();
     }
