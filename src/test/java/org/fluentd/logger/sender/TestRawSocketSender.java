@@ -29,12 +29,6 @@ import static org.junit.Assert.assertTrue;
 
 public class TestRawSocketSender {
 
-    static {
-        Logger l = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-
-        System.setProperty("java.util.logging.SimpleFormatter.format", "%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS %4$s %2$s %5$s%n");
-    }
-
     @Test
     public void testNormal01() throws Exception {
         // start mock fluentd
