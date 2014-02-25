@@ -5,6 +5,8 @@ import org.fluentd.logger.util.MockFluentd.MockProcess;
 import org.junit.Test;
 import org.msgpack.MessagePack;
 import org.msgpack.unpacker.Unpacker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.EOFException;
@@ -26,10 +28,6 @@ import static org.junit.Assert.assertTrue;
 
 
 public class TestRawSocketSender {
-
-    static {
-        System.setProperty("java.util.logging.SimpleFormatter.format", "%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS %4$s %2$s %5$s%n");
-    }
 
     @Test
     public void testNormal01() throws Exception {
@@ -224,6 +222,7 @@ public class TestRawSocketSender {
     public void testTimeout() throws InterruptedException {
         final AtomicBoolean socketFinished = new AtomicBoolean(false);
         ExecutorService executor = Executors.newSingleThreadExecutor();
+
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -233,15 +232,17 @@ public class TestRawSocketSender {
                     socketSender = new RawSocketSender("192.0.2.1", 24224, 200, 8 * 1024);
                 }
                 finally {
-                    socketFinished.set(true);
                     if (socketSender != null) {
                         socketSender.close();
                     }
+                    socketFinished.set(true);
                 }
             }
         });
 
-        TimeUnit.MILLISECONDS.sleep(400);
+        while(!socketFinished.get())
+            Thread.yield();
+
         assertTrue(socketFinished.get());
         executor.shutdownNow();
     }

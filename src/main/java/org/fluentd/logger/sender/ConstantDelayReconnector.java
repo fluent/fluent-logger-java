@@ -1,13 +1,15 @@
 package org.fluentd.logger.sender;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.LinkedList;
 
 /**
  * Calculate exponential delay for reconnecting
  */
 public class ConstantDelayReconnector implements Reconnector {
-    private static final java.util.logging.Logger LOG = java.util.logging.Logger
-            .getLogger(ExponentialDelayReconnector.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(ExponentialDelayReconnector.class);
 
     private double wait = 50; // Default wait to 50 ms
 
