@@ -66,11 +66,12 @@ public class TestRawSocketSender {
         // close sender sockets
         sender.close();
 
+        // wait for unpacking event data on fluentd
+        Thread.sleep(2000);
+
         // close mock server sockets
         fluentd.close();
 
-        // wait for unpacking event data on fluentd
-        Thread.sleep(1000);
 
         // check data
         assertEquals(2, elist.size());
@@ -126,11 +127,12 @@ public class TestRawSocketSender {
         // close sender sockets
         sender.close();
 
+        // wait for unpacking event data on fluentd
+        Thread.sleep(2000);
+
         // close mock server sockets
         fluentd.close();
 
-        // wait for unpacking event data on fluentd
-        Thread.sleep(1000);
 
         // check data
         assertEquals(count, elist.size());
@@ -206,12 +208,13 @@ public class TestRawSocketSender {
         senders[0].close();
         senders[1].close();
 
+        // wait for unpacking event data on fluentd
+        Thread.sleep(2000);
+
         // close mock server sockets
         fluentds[0].close();
         fluentds[1].close();
 
-        // wait for unpacking event data on fluentd
-        Thread.sleep(1000);
 
         // check data
         assertEquals(counts[0], elists[0].size());
