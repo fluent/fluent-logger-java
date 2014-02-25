@@ -12,6 +12,9 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -103,7 +106,8 @@ public class TestFluentLogger {
                 }
             }
         });
-        fluentd.start();
+        ExecutorService executor = Executors.newFixedThreadPool(1);
+        executor.submit(fluentd);
 
         // start loggers
         FluentLogger[] loggers = new FluentLogger[loggerCount];
@@ -143,7 +147,8 @@ public class TestFluentLogger {
         fluentd.close();
 
         // wait for unpacking event data on fluentd
-        Thread.sleep(1000);
+        while(executor.awaitTermination(1000, TimeUnit.MILLISECONDS)) {
+        }
 
         // check data
         assertEquals(counts[0], elists[0].size());
