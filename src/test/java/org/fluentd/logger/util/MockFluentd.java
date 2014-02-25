@@ -146,9 +146,12 @@ public class MockFluentd extends Thread {
         try {
             // We need to wait until all log writing threads are finished.
             int numTrial = 0;
-            while(numTrial < 3 && !service.awaitTermination(1, TimeUnit.SECONDS)) {
+            final int maxTrial = 5;
+            while(numTrial < 5 && !service.awaitTermination(1, TimeUnit.SECONDS)) {
                 numTrial++;
             }
+            if(numTrial >= maxTrial)
+                _logger.error("Timed out");
         }
         catch(InterruptedException e) {
             _logger.error("interrupted", e);

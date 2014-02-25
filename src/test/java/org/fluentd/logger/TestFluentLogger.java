@@ -87,6 +87,7 @@ public class TestFluentLogger {
 
         // close loggers
         logger.close();
+        Thread.sleep(2000);
 
         // close mock fluentd
         fluentd.close();
@@ -169,6 +170,7 @@ public class TestFluentLogger {
 
         // close loggers
         FluentLogger.closeAll();
+        Thread.sleep(2000);
 
         // close mock fluentd
         fluentd.close();
