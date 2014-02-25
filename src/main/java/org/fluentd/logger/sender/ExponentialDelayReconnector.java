@@ -9,7 +9,6 @@ import java.util.LinkedList;
  * Calcurate exponential delay for reconnecting
  */
 public class ExponentialDelayReconnector implements Reconnector {
-    private static final Logger LOG = LoggerFactory.getLogger(ExponentialDelayReconnector.class);
 
     private double wait = 0.5;
 

@@ -6,15 +6,24 @@ import org.msgpack.packer.Packer;
 import org.msgpack.template.Templates;
 import org.msgpack.type.Value;
 import org.msgpack.unpacker.Unpacker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MockFluentd extends Thread {
+
+    private static final Logger _logger = LoggerFactory.getLogger(MockFluentd.class);
+
     private ConcurrentLinkedQueue<Socket> clientSockets = new ConcurrentLinkedQueue<Socket>();
 
     public static interface MockProcess {
@@ -79,6 +88,7 @@ public class MockFluentd extends Thread {
 
     private MockProcess process;
 
+    private AtomicBoolean started = new AtomicBoolean(false);
     private AtomicBoolean finished = new AtomicBoolean(false);
 
     public MockFluentd(int port, MockProcess mockProcess) throws IOException {
@@ -98,35 +108,55 @@ public class MockFluentd extends Thread {
         return port;
     }
 
+    private ExecutorService service = Executors.newCachedThreadPool();
+
+
     public void run() {
+        _logger.debug("Started MockFluentd port:" + serverSocket.getLocalPort());
+
         while (!finished.get()) {
             try {
+                started.set(true);
                 final Socket socket = serverSocket.accept();
                 socket.setSoLinger(true, 0);
                 clientSockets.add(socket);
-                Runnable r = new Runnable() {
+                service.submit(new Runnable() {
                     public void run() {
                         try {
+                            _logger.trace("received log");
                             MessagePack msgpack = new MessagePack();
                             msgpack.register(Event.class, MockEventTemplate.INSTANCE);
                             process.process(msgpack, socket);
+                            _logger.trace("wrote log");
                         } catch (IOException e) {
                             // ignore
                         }
                     }
-                };
-                new Thread(r).start();
+                });
             } catch (IOException e) {
                 // ignore
             }
         }
+        _logger.debug("Terminated MockFluentd port:" + serverSocket.getLocalPort());
     }
 
     public void close() throws IOException {
         finished.set(true);
-        if (serverSocket != null) {
+        service.shutdown();
+        try {
+            // We need to wait until all log writing threads are finished.
+            int numTrial = 0;
+            while(numTrial < 3 && !service.awaitTermination(1, TimeUnit.SECONDS)) {
+                numTrial++;
+            }
+        }
+        catch(InterruptedException e) {
+            _logger.error("interrupted", e);
+        }
+         if (serverSocket != null) {
             serverSocket.close();
         }
+
     }
 
     public void closeClientSockets() {

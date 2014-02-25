@@ -5,10 +5,10 @@
          ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
     <!-- Meanings of the symbols are defined in http://logback.qos.ch/manual/layouts.html -->
     <encoder>
-      <pattern>%d %highlight(%-5level) [%thread] - %msg %ex{0}</pattern>
+      <pattern>%d %highlight(%-5level) [%thread] %msg%n%ex{0}</pattern>
     </encoder>
   </appender>
-
+ 
   <root level="debug">
     <appender-ref ref="STDOUT"/>
   </root>

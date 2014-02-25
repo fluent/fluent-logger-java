@@ -3,16 +3,18 @@ package org.fluentd.logger;
 import org.fluentd.logger.sender.Event;
 import org.fluentd.logger.sender.NullSender;
 import org.fluentd.logger.util.MockFluentd;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.msgpack.MessagePack;
 import org.msgpack.unpacker.Unpacker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.*;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -20,6 +22,28 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertEquals;
 
 public class TestFluentLogger {
+    private Logger _logger = LoggerFactory.getLogger(TestFluentLogger.class);
+
+    class FixedThreadManager {
+        private final ExecutorService service;
+
+        public FixedThreadManager(int numThreads) {
+            service = Executors.newFixedThreadPool(numThreads);
+        }
+
+        public void submit(Runnable r) {
+            service.submit(r);
+        }
+
+        public void join() throws InterruptedException {
+            service.shutdown();
+            while(!service.awaitTermination(1000, TimeUnit.MILLISECONDS)) {
+                _logger.debug("waiting ...");
+            }
+            _logger.trace("Terminating FixedThreadManager");
+        }
+    }
+
 
     @Test
     public void testNormal01() throws Exception {
@@ -42,7 +66,9 @@ public class TestFluentLogger {
                 }
             }
         });
-        fluentd.start();
+
+        FixedThreadManager threadManager = new FixedThreadManager(1);
+        threadManager.submit(fluentd);
 
         // start loggers
         FluentLogger logger = FluentLogger.getLogger("testtag", host, port);
@@ -66,7 +92,7 @@ public class TestFluentLogger {
         fluentd.close();
 
         // wait for unpacking event data on fluentd
-        Thread.sleep(1000);
+        threadManager.join();
 
         // check data
         assertEquals(2, elist.size());
@@ -74,6 +100,7 @@ public class TestFluentLogger {
         assertEquals("testtag.test01", elist.get(1).tag);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testNormal02() throws Exception {
         int loggerCount = 3;
@@ -106,8 +133,8 @@ public class TestFluentLogger {
                 }
             }
         });
-        ExecutorService executor = Executors.newFixedThreadPool(1);
-        executor.submit(fluentd);
+        FixedThreadManager threadManager = new FixedThreadManager(1);
+        threadManager.submit(fluentd);
 
         // start loggers
         FluentLogger[] loggers = new FluentLogger[loggerCount];
@@ -147,8 +174,7 @@ public class TestFluentLogger {
         fluentd.close();
 
         // wait for unpacking event data on fluentd
-        while(executor.awaitTermination(1000, TimeUnit.MILLISECONDS)) {
-        }
+        threadManager.join();
 
         // check data
         assertEquals(counts[0], elists[0].size());
@@ -174,6 +200,9 @@ public class TestFluentLogger {
         int port = MockFluentd.randomPort();
         String host = "localhost";
         final List<Event> elist1 = new ArrayList<Event>();
+
+        FixedThreadManager threadManager = new FixedThreadManager(2);
+
         MockFluentd fluentd1 = new MockFluentd(port, new MockFluentd.MockProcess() {
             public void process(MessagePack msgpack, Socket socket) throws IOException {
                 BufferedInputStream in = new BufferedInputStream(socket.getInputStream());
@@ -192,7 +221,7 @@ public class TestFluentLogger {
                 }
             }
         });
-        fluentd1.start();
+        threadManager.submit(fluentd1);
 
         // start loggers
         FluentLogger logger = FluentLogger.getLogger("testtag", host, port);
@@ -204,6 +233,7 @@ public class TestFluentLogger {
         }
 
         TimeUnit.MILLISECONDS.sleep(500);
+        _logger.info("Closing the current fluentd instance");
         fluentd1.closeClientSockets();
         fluentd1.close();
 
@@ -232,7 +262,7 @@ public class TestFluentLogger {
                 }
             }
         });
-        fluentd2.start();
+        threadManager.submit(fluentd2);
 
         TimeUnit.MILLISECONDS.sleep(500);
 
@@ -245,11 +275,15 @@ public class TestFluentLogger {
 
         // close loggers
         FluentLogger.closeAll();
+        Thread.sleep(2000);
 
         fluentd2.close();
 
+
         // wait for unpacking event data on fluentd
-        TimeUnit.MILLISECONDS.sleep(500);
+        TimeUnit.MILLISECONDS.sleep(2000);
+        threadManager.join();
+
 
         // check data
         assertEquals(1, elist1.size());
