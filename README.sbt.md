@@ -1,4 +1,3 @@
-
 ## Development with sbt
 
 sbt is a build tool for Scala, but it can be used for pure-java projects. To install sbt (in Mac OS X), do 
@@ -22,7 +21,7 @@ $ sbt
 > test
 ```
 
-* Running tests again if some source code has changed
+* Running tests again if some source code is changed
 ```
 > ~test 
 ```   
