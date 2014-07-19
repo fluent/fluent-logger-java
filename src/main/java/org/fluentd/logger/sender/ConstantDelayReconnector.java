@@ -3,6 +3,7 @@ package org.fluentd.logger.sender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Deque;
 import java.util.LinkedList;
 
 /**
@@ -15,7 +16,7 @@ public class ConstantDelayReconnector implements Reconnector {
 
     private int maxErrorHistorySize = 100;
 
-    private LinkedList<Long> errorHistory = new LinkedList<Long>();
+    private Deque<Long> errorHistory = new LinkedList<Long>();
 
     public ConstantDelayReconnector() {
         errorHistory = new LinkedList<Long>();
