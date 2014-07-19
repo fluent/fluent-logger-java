@@ -43,6 +43,15 @@
     <url>https://github.com/fluent/fluent-logger-java/issues</url>
   </issueManagement>
 
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+    <!-- maven-compiler-plugin config -->
+    <maven.compiler.source>6</maven.compiler.source>
+    <maven.compiler.target>6</maven.compiler.target>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.msgpack</groupId>
@@ -87,15 +96,6 @@
     </testResources>
 
     <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.2</version>
-        <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
-          <encoding>UTF-8</encoding>
-        </configuration>
-      </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <version>2.2</version>
@@ -153,7 +153,6 @@
           <doctitle>${project.name} ${project.version} API</doctitle>
           <aggregate>true</aggregate>
           <locale>en_US</locale>
-          <encoding>UTF-8</encoding>
         </configuration>
       </plugin>
       <plugin>
@@ -177,7 +176,6 @@
           <doctitle>${project.name} ${project.version} API</doctitle>
           <aggregate>true</aggregate>
           <locale>en_US</locale>
-          <encoding>UTF-8</encoding>
         </configuration>
       </plugin>
       <plugin>
