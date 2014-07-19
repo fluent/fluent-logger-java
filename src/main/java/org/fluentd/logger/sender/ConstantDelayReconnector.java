@@ -50,5 +50,4 @@ public class ConstantDelayReconnector implements Reconnector {
 
         return (!(timestamp - errorHistory.getLast() < wait));
     }
-
 }
