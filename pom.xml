@@ -25,12 +25,6 @@
     </license>
   </licenses>
 
-  <scm>
-    <connection>scm:git:git://github.com/fluent/fluent-logger-java.git</connection>
-    <developerConnection>scm:git:git@github.com:fluent/fluent-logger-java.git</developerConnection>
-    <url>scm:git:git://github.com/fluent/fluent-logger-java.git</url>
-  </scm>
-
   <developers>
     <developer>
       <id>muga</id>
@@ -39,6 +33,12 @@
     </developer>
   </developers>
 
+  <scm>
+    <url>https://github.com/fluent/fluent-logger-java.git</url>
+    <connection>scm:git:git://github.com/fluent/fluent-logger-java.git</connection>
+    <developerConnection>scm:git:git@github.com:fluent/fluent-logger-java.git</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
   <issueManagement>
     <system>GitHub</system>
     <url>https://github.com/fluent/fluent-logger-java/issues</url>
