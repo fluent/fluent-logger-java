@@ -43,6 +43,10 @@
     <system>GitHub</system>
     <url>https://github.com/fluent/fluent-logger-java/issues</url>
   </issueManagement>
+  <ciManagement>
+    <system>Travis-CI</system>
+    <url>https://travis-ci.org/fluent/fluent-logger-java/issues</url>
+  </ciManagement>
 
   <dependencies>
     <dependency>
