@@ -16,6 +16,7 @@
   <name>Fluent Logger for Java</name>
   <description>Java implementation of structured logger for Fluent.</description>
   <url>https://github.com/fluent/fluent-logger-java</url>
+  <inceptionYear>2011</inceptionYear>
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
