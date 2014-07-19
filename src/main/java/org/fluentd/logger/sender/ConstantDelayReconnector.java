@@ -10,7 +10,7 @@ import java.util.LinkedList;
  * Calculate exponential delay for reconnecting
  */
 public class ConstantDelayReconnector implements Reconnector {
-    private static final Logger LOG = LoggerFactory.getLogger(ExponentialDelayReconnector.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ConstantDelayReconnector.class);
 
     private double wait = 50; // Default wait to 50 ms
 
