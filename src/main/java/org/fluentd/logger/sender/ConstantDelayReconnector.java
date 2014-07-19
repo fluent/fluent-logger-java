@@ -43,11 +43,6 @@ public class ConstantDelayReconnector implements Reconnector {
     }
 
     public boolean enableReconnection(long timestamp) {
-        int size = errorHistory.size();
-        if (size == 0) {
-            return true;
-        }
-
-        return (!(timestamp - errorHistory.getLast() < wait));
+        return errorHistory.size() == 0 || timestamp - errorHistory.getLast() >= wait;
     }
 }
