@@ -14,7 +14,7 @@ public class ConstantDelayReconnector implements Reconnector {
 
     private double wait = 50; // Default wait to 50 ms
 
-    private int maxErrorHistorySize = 100;
+    private static final int MAX_ERROR_HISTORY_SIZE = 100;
 
     private Deque<Long> errorHistory = new LinkedList<Long>();
 
@@ -29,7 +29,7 @@ public class ConstantDelayReconnector implements Reconnector {
 
     public void addErrorHistory(long timestamp) {
         errorHistory.addLast(timestamp);
-        if (errorHistory.size() > maxErrorHistorySize) {
+        if (errorHistory.size() > MAX_ERROR_HISTORY_SIZE) {
             errorHistory.removeFirst();
         }
     }
