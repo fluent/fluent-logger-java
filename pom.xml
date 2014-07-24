@@ -67,13 +67,6 @@
     </dependency>
   </dependencies>
 
-  <repositories>
-    <repository>
-      <id>local-repo</id>
-      <url>file://${basedir}/mvn-local</url>
-    </repository>
-  </repositories>
-
   <build>
     <plugins>
       <plugin>
