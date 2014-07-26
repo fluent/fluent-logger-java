@@ -70,17 +70,6 @@ public class RawSocketSender implements Sender {
         this.reconnector = reconnector;
         name = String.format("%s_%d_%d_%d", host, port, timeout, bufferCapacity);
         this.timeout = timeout;
-        open();
-    }
-
-    private void open() {
-        try {
-            connect();
-        } catch (IOException e) {
-            LOG.error("Failed to connect fluentd: " + server.toString(), e);
-            LOG.warn("Connection will be retried");
-            close();
-        }
     }
 
     private void connect() throws IOException {
