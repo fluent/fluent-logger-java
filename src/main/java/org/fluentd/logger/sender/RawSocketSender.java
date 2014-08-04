@@ -139,11 +139,24 @@ public class RawSocketSender implements Sender {
         return send(bytes);
     }
 
+    private boolean flushBuffer() {
+        if (reconnector.enableReconnection(System.currentTimeMillis())) {
+            flush();
+            if (pendings.position() == 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private synchronized boolean send(byte[] bytes) {
         // buffering
         if (pendings.position() + bytes.length > pendings.capacity()) {
-            LOG.error("Cannot send logs to " + server.toString());
-            return false;
+            if (!flushBuffer()) {
+                LOG.error("Cannot send logs to " + server.toString());
+                return false;
+            }
         }
         pendings.put(bytes);
 

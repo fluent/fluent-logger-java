@@ -84,6 +84,7 @@ public class MockFluentd extends Thread {
         }
     }
 
+    private final int port;
     private ServerSocket serverSocket;
 
     private MockProcess process;
@@ -91,8 +92,8 @@ public class MockFluentd extends Thread {
     private AtomicBoolean started = new AtomicBoolean(false);
     private AtomicBoolean finished = new AtomicBoolean(false);
 
-    public MockFluentd(int port, MockProcess mockProcess) throws IOException {
-        serverSocket = new ServerSocket(port);
+    public MockFluentd(int port, MockProcess mockProcess) {
+        this.port = port;
         process = mockProcess;
     }
 
@@ -112,6 +113,13 @@ public class MockFluentd extends Thread {
 
 
     public void run() {
+        try {
+            serverSocket = new ServerSocket(port);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to start MockFluentd process", e);
+        }
+
         _logger.debug("Started MockFluentd port:" + serverSocket.getLocalPort());
 
         while (!finished.get()) {
