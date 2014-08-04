@@ -343,16 +343,17 @@ public class TestRawSocketSender {
         final List<Event> elist = new ArrayList<Event>();
         final MockFluentd fluentd = new MockFluentd(port, new MockFluentd.MockProcess() {
             public void process(MessagePack msgpack, Socket socket) throws IOException {
-                BufferedInputStream in = new BufferedInputStream(socket.getInputStream());
                 try {
+                    BufferedInputStream in = new BufferedInputStream(socket.getInputStream());
                     Unpacker unpacker = msgpack.createUnpacker(in);
                     while (true) {
                         Event e = unpacker.read(Event.class);
                         elist.add(e);
                     }
-                    //socket.close();
                 } catch (EOFException e) {
                     // ignore
+                } finally {
+                    socket.close();
                 }
             }
         });
@@ -379,19 +380,18 @@ public class TestRawSocketSender {
             record.put("num", i);
             record.put("str", "name" + i);
 
-            if (bufferFull.getCount() == 0) {
-                // After starting the fluentd
-                if (sender.emit(tag, record)) {
-                    // Succeeded in flush buffer
-                    break;
-                }
-            }
-            else {
+            if (bufferFull.getCount() > 0) {
+                // Fill the sender's buffer
                 if (!sender.emit(tag, record)) {
                     // Buffer full. Need to recover the fluentd
                     bufferFull.countDown();
                     Thread.sleep(2000);
                 }
+            }
+            else {
+                // Flush the sender's buffer after the fluentd starts
+                sender.emit(tag, record);
+                break;
             }
         }
 
