@@ -30,7 +30,7 @@ public class TestSenderFluentdDownOperation {
         long timestamp = System.currentTimeMillis() / 1000;
 
         // start senders
-        Sender sender = new RawSocketSender("localhost", port);
+        RawSocketSender sender = new RawSocketSender("localhost", port);
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("t1k1", "t1v1");
         data.put("t1k2", "t1v2");
@@ -75,7 +75,7 @@ public class TestSenderFluentdDownOperation {
         server.start();
 
         // start senders
-        Sender sender = new RawSocketSender("localhost", port);
+        RawSocketSender sender = new RawSocketSender("localhost", port);
 
         // server close
         server.close();

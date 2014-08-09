@@ -26,9 +26,7 @@ public interface Sender {
 
     void flush();
 
-    public byte[] getBuffer();
+    void close();
 
-    public void close();
-
-    public String getName();
+    String getName();
 }
