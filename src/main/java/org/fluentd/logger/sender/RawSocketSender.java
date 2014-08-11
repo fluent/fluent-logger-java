@@ -91,6 +91,7 @@ public class RawSocketSender implements Sender {
         }
     }
 
+    @Override
     public void close() {
         // close output stream
         if (out != null) {
@@ -113,10 +114,12 @@ public class RawSocketSender implements Sender {
         }
     }
 
+    @Override
     public boolean emit(String tag, Map<String, Object> data) {
         return emit(tag, System.currentTimeMillis() / 1000, data);
     }
 
+    @Override
     public boolean emit(String tag, long timestamp, Map<String, Object> data) {
         return emit(new Event(tag, timestamp, data));
     }
@@ -171,6 +174,7 @@ public class RawSocketSender implements Sender {
         return true;
     }
 
+    @Override
     public synchronized void flush() {
         try {
             // check whether connection is established or not
@@ -186,7 +190,7 @@ public class RawSocketSender implements Sender {
         }
     }
 
-    public byte[] getBuffer() {
+    synchronized byte[] getBuffer() {
         int len = pendings.position();
         pendings.position(0);
         byte[] ret = new byte[len];
@@ -198,6 +202,7 @@ public class RawSocketSender implements Sender {
         pendings.clear();
     }
 
+    @Override
     public String getName() {
         return name;
     }

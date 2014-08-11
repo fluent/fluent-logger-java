@@ -39,11 +39,6 @@ public class NullSender implements Sender {
     }
 
     @Override
-    public byte[] getBuffer() {
-        return new byte[0];
-    }
-
-    @Override
     public void close() {
     }
 
