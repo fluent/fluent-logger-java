@@ -1,3 +1,23 @@
+Release 0.3.1 - 2014/08/17
+  IMPROVEMENTS
+    Support lazy connection
+    Remove Sender#getBuffer and make RawSocketSender#getBuffer thread-safe
+    Improve unit tests to make it more stable
+    Do not force projects to use logback
+    Refactor pom.xml
+    Refactor some classes
+
+  BUG FIXMES
+    RawSocketSender#send tries to flush the buffer after it's full
+
+Release 0.3.0 - 2014/02/25
+  IMPROVEMENTS
+    Remove warnings in maven 3.x
+    Improve unit tests to make sure it finishes robustly and suppress the stack trace
+    Add settings for Travis CI
+    Update msgpack: v0.6.7 -> v0.6.8
+    Use slf4j-api instead of java.util.logging
+
 Release 0.2.11 - 2013/09/13
   BUG FIXMES
     Fixes RawSocketSender#connect()'s timeout
