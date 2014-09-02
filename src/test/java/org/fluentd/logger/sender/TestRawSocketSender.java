@@ -390,7 +390,7 @@ public class TestRawSocketSender {
             }
             else {
                 // Flush the sender's buffer after the fluentd starts
-                sender.flush();
+                sender.emit(tag, record);
                 break;
             }
         }
@@ -407,22 +407,5 @@ public class TestRawSocketSender {
         // check data
         assertEquals(0, bufferFull.getCount());
         assertEquals(i, elist.size());
-    }
-    
-    @Test
-    public void testError() throws Exception {
-        // in this test we will not start a MockFluentd instance and expect to get a false value for emit()
-
-        // start sender
-        int port = MockFluentd.randomPort();
-        Sender sender = new RawSocketSender("localhost", port);
-        String tag = "tag";
-        Map<String, Object> record = new HashMap<String, Object>();
-        record.put("num", port);
-
-        // send and check that the value is false
-        assertTrue(!sender.emit(tag, record));
-        
-        sender.close();
     }
 }

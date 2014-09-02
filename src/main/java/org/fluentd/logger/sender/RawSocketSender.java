@@ -171,7 +171,7 @@ public class RawSocketSender implements Sender {
         // send pending data
         flush();
 
-        return reconnector.isErrorHistoryEmpty();
+        return true;
     }
 
     @Override
