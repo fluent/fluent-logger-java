@@ -29,4 +29,6 @@ public interface Sender {
     void close();
 
     String getName();
+
+    boolean isConnected();
 }

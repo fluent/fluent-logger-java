@@ -211,4 +211,9 @@ public class RawSocketSender implements Sender {
     public String toString() {
         return getName();
     }
+
+    @Override
+    public boolean isConnected() {
+        return socket != null && !socket.isClosed() && socket.isConnected() && !socket.isOutputShutdown();
+    }
 }
