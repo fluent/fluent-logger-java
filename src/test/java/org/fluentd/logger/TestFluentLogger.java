@@ -3,7 +3,6 @@ package org.fluentd.logger;
 import org.fluentd.logger.sender.Event;
 import org.fluentd.logger.sender.NullSender;
 import org.fluentd.logger.util.MockFluentd;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.msgpack.MessagePack;
 import org.msgpack.unpacker.Unpacker;
@@ -20,6 +19,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class TestFluentLogger {
     private Logger _logger = LoggerFactory.getLogger(TestFluentLogger.class);
@@ -227,12 +228,14 @@ public class TestFluentLogger {
 
         // start loggers
         FluentLogger logger = FluentLogger.getLogger("testtag", host, port);
+        assertFalse(logger.isConnected());
         {
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("k1", "v1");
             data.put("k2", "v2");
             logger.log("test01", data);
         }
+        assertTrue(logger.isConnected());
 
         TimeUnit.MILLISECONDS.sleep(500);
         _logger.info("Closing the current fluentd instance");
@@ -240,13 +243,14 @@ public class TestFluentLogger {
         fluentd1.close();
 
         TimeUnit.MILLISECONDS.sleep(500);
-
+        assertTrue(logger.isConnected());
         {
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("k3", "v3");
             data.put("k4", "v4");
             logger.log("test01", data);
         }
+        assertFalse(logger.isConnected());
 
         final List<Event> elist2 = new ArrayList<Event>();
         MockFluentd fluentd2 = new MockFluentd(port, new MockFluentd.MockProcess() {
@@ -274,6 +278,7 @@ public class TestFluentLogger {
             data.put("k6", "v6");
             logger.log("test01", data);
         }
+        assertTrue(logger.isConnected());
 
         // close loggers
         FluentLogger.closeAll();
@@ -281,11 +286,9 @@ public class TestFluentLogger {
 
         fluentd2.close();
 
-
         // wait for unpacking event data on fluentd
         TimeUnit.MILLISECONDS.sleep(2000);
         threadManager.join();
-
 
         // check data
         assertEquals(1, elist1.size());
@@ -361,6 +364,14 @@ public class TestFluentLogger {
 
         final FluentLogger logger = FluentLogger.getLogger(null, host, port);
         ExecutorService executorService = Executors.newFixedThreadPool(N);
+        /*
+         * Each thread emits the following events LOOP times
+         * Thread#0: {'0' => 0}
+         * Thread#1: {'0' => 0, '1' => 1}
+         * Thread#2: {'0' => 0, '1' => 1, '2' => 2}
+         *    :
+         * Thread#(N-1): {'0' => 0, '1' => 1, '2' => 2 ... '(N-1)' => (N-1)}
+         */
         for (int i = 0; i < N; i++) {
             final int ii = i;
             executorService.execute(new Runnable() {

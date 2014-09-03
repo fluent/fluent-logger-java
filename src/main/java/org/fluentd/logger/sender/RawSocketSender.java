@@ -82,10 +82,10 @@ public class RawSocketSender implements Sender {
         }
     }
 
-    private void reconnect(boolean forceReconnection) throws IOException {
+    private void reconnect() throws IOException {
         if (socket == null) {
             connect();
-        } else if (forceReconnection || socket.isClosed() || (!socket.isConnected())) {
+        } else if (socket.isClosed() || (!socket.isConnected())) {
             close();
             connect();
         }
@@ -178,7 +178,7 @@ public class RawSocketSender implements Sender {
     public synchronized void flush() {
         try {
             // check whether connection is established or not
-            reconnect(!reconnector.isErrorHistoryEmpty());
+            reconnect();
             // write data
             out.write(getBuffer());
             out.flush();
@@ -187,6 +187,7 @@ public class RawSocketSender implements Sender {
         } catch (IOException e) {
             LOG.error(this.getClass().getName(), "flush", e);
             reconnector.addErrorHistory(System.currentTimeMillis());
+            close();
         }
     }
 

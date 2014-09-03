@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 
@@ -275,9 +276,11 @@ public class TestRawSocketSender {
         fluentd.start();
 
         Sender sender = new RawSocketSender("localhost", port);
+        assertFalse(sender.isConnected());
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("key0", "v0");
         sender.emit("tag0", data);
+        assertTrue(sender.isConnected());
 
         // close fluentd to make the next sending failed
         TimeUnit.MILLISECONDS.sleep(500);
@@ -289,6 +292,7 @@ public class TestRawSocketSender {
         data = new HashMap<String, Object>();
         data.put("key0", "v1");
         sender.emit("tag0", data);
+        assertFalse(sender.isConnected());
 
         // wait to avoid the suppression of reconnection
         TimeUnit.MILLISECONDS.sleep(500);
