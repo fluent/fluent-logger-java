@@ -50,4 +50,9 @@ public class NullSender implements Sender {
     public String toString() {
         return this.getClass().getName();
     }
+
+    @Override
+    public boolean isConnected() {
+        return true;
+    }
 }

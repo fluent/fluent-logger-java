@@ -128,4 +128,8 @@ public class FluentLogger {
             sender.close();
         }
     }
+
+    public boolean isConnected() {
+        return sender != null && sender.isConnected();
+    }
 }
