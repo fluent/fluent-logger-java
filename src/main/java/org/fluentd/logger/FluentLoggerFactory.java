@@ -19,6 +19,7 @@ package org.fluentd.logger;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 import java.util.WeakHashMap;
@@ -33,7 +34,7 @@ public class FluentLoggerFactory {
     private final Map<String, FluentLogger> loggers;
 
     public FluentLoggerFactory() {
-        loggers = new WeakHashMap<String, FluentLogger>();
+        loggers = Collections.synchronizedMap(new WeakHashMap<String, FluentLogger>());
     }
 
     public FluentLogger getLogger(String tagPrefix) {
@@ -48,7 +49,7 @@ public class FluentLoggerFactory {
         return getLogger(tagPrefix, host, port, timeout, bufferCapacity, new ExponentialDelayReconnector());
     }
 
-    public synchronized FluentLogger getLogger(String tagPrefix, String host, int port, int timeout, int bufferCapacity,
+    public FluentLogger getLogger(String tagPrefix, String host, int port, int timeout, int bufferCapacity,
             Reconnector reconnector) {
         String key = String.format("%s_%s_%d_%d_%d", new Object[] { tagPrefix, host, port, timeout, bufferCapacity });
         if (loggers.containsKey(key)) {
@@ -67,6 +68,21 @@ public class FluentLoggerFactory {
                     throw new RuntimeException(e);
                 }
             }
+            FluentLogger logger = new FluentLogger(tagPrefix, sender);
+            loggers.put(key, logger);
+            return logger;
+        }
+    }
+
+    public FluentLogger getLogger(String tagPrefix, String host, int port, int timeout, int bufferCapacity,
+            Sender sender) {
+        if (sender == null) {
+            return getLogger(tagPrefix, host, port, timeout, bufferCapacity);
+        }
+        String key = String.format("%s_%s_%d_%d_%d_%s", new Object[] { tagPrefix, host, port, timeout, bufferCapacity, sender == null ? "null" : sender .getName() });
+        if (loggers.containsKey(key)) {
+            return loggers.get(key);
+        } else {
             FluentLogger logger = new FluentLogger(tagPrefix, sender);
             loggers.put(key, logger);
             return logger;
