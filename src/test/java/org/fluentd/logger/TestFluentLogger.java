@@ -17,10 +17,9 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class TestFluentLogger {
     private Logger _logger = LoggerFactory.getLogger(TestFluentLogger.class);
@@ -203,9 +202,11 @@ public class TestFluentLogger {
         int port = MockFluentd.randomPort();
         String host = "localhost";
         final List<Event> elist1 = new ArrayList<Event>();
+        final AtomicReference<Exception> lastError = new AtomicReference<Exception>();
 
         FixedThreadManager threadManager = new FixedThreadManager(2);
 
+        // run a fluentd
         MockFluentd fluentd1 = new MockFluentd(port, new MockFluentd.MockProcess() {
             public void process(MessagePack msgpack, Socket socket) throws IOException {
                 BufferedInputStream in = new BufferedInputStream(socket.getInputStream());
@@ -226,8 +227,14 @@ public class TestFluentLogger {
         });
         threadManager.submit(fluentd1);
 
-        // start loggers
+        // start a logger
         FluentLogger logger = FluentLogger.getLogger("testtag", host, port);
+        logger.setServerErrorHandler(new ServerErrorHandler() {
+            @Override
+            public void handle(IOException ex) {
+                lastError.set(ex);
+            }
+        });
         assertFalse(logger.isConnected());
         {
             Map<String, Object> data = new HashMap<String, Object>();
@@ -237,21 +244,31 @@ public class TestFluentLogger {
         }
         assertTrue(logger.isConnected());
 
+        // close the fluentd to make the situation that the fluentd gets down
         TimeUnit.MILLISECONDS.sleep(500);
         _logger.info("Closing the current fluentd instance");
         fluentd1.closeClientSockets();
         fluentd1.close();
 
+        // the logger should fail to send an event
         TimeUnit.MILLISECONDS.sleep(500);
         assertTrue(logger.isConnected());
-        {
-            Map<String, Object> data = new HashMap<String, Object>();
-            data.put("k3", "v3");
-            data.put("k4", "v4");
-            logger.log("test01", data);
+        for (int i = 0; i < 2; i++) {
+            // repeat twice to test both behaviors on socket write error and connection error
+            assertNull(lastError.get());
+            {
+                Map<String, Object> data = new HashMap<String, Object>();
+                data.put("k3", "v3");
+                data.put("k4", "v4");
+                logger.log("test01", data);
+            }
+            assertTrue(lastError.get() instanceof IOException);
+            lastError.set(null);    // Clear the last error
+            assertFalse(logger.isConnected());
+            TimeUnit.MILLISECONDS.sleep(100);
         }
-        assertFalse(logger.isConnected());
 
+        // run the fluentd again
         final List<Event> elist2 = new ArrayList<Event>();
         MockFluentd fluentd2 = new MockFluentd(port, new MockFluentd.MockProcess() {
             public void process(MessagePack msgpack, Socket socket) throws IOException {
@@ -270,14 +287,15 @@ public class TestFluentLogger {
         });
         threadManager.submit(fluentd2);
 
+        // the logger should send an event successfully
         TimeUnit.MILLISECONDS.sleep(500);
-
         {
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("k5", "v5");
             data.put("k6", "v6");
             logger.log("test01", data);
         }
+        assertNull(lastError.get());
         assertTrue(logger.isConnected());
 
         // close loggers
@@ -289,14 +307,16 @@ public class TestFluentLogger {
         // wait for unpacking event data on fluentd
         TimeUnit.MILLISECONDS.sleep(2000);
         threadManager.join();
+        assertNull(lastError.get());
 
         // check data
         assertEquals(1, elist1.size());
         assertEquals("testtag.test01", elist1.get(0).tag);
 
-        assertEquals(2, elist2.size());
+        assertEquals(3, elist2.size());
         assertEquals("testtag.test01", elist2.get(0).tag);
         assertEquals("testtag.test01", elist2.get(1).tag);
+        assertEquals("testtag.test01", elist2.get(2).tag);
     }
 
     @Test

@@ -17,6 +17,7 @@
 //
 package org.fluentd.logger.sender;
 
+import org.fluentd.logger.ServerErrorHandler;
 import org.msgpack.MessagePack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,8 @@ public class RawSocketSender implements Sender {
     private Reconnector reconnector;
 
     private String name;
+
+    private ServerErrorHandler serverErrorHandler;
 
     public RawSocketSender() {
         this("localhost", 24224);
@@ -185,6 +188,14 @@ public class RawSocketSender implements Sender {
             clearBuffer();
             reconnector.clearErrorHistory();
         } catch (IOException e) {
+            try {
+                if (serverErrorHandler != null) {
+                    serverErrorHandler.handle(e);
+                }
+            }
+            catch (Exception handlerException) {
+                LOG.warn("ServerErrorHandler.handle error", handlerException);
+            }
             LOG.error(this.getClass().getName(), "flush", e);
             reconnector.addErrorHistory(System.currentTimeMillis());
             close();
@@ -216,5 +227,10 @@ public class RawSocketSender implements Sender {
     @Override
     public boolean isConnected() {
         return socket != null && !socket.isClosed() && socket.isConnected() && !socket.isOutputShutdown();
+    }
+
+    @Override
+    public void setServerErrorHandler(ServerErrorHandler serverErrorHandler) {
+        this.serverErrorHandler = serverErrorHandler;
     }
 }

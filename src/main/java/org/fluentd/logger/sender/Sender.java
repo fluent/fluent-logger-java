@@ -17,6 +17,8 @@
 //
 package org.fluentd.logger.sender;
 
+import org.fluentd.logger.ServerErrorHandler;
+
 import java.util.Map;
 
 public interface Sender {
@@ -31,4 +33,6 @@ public interface Sender {
     String getName();
 
     boolean isConnected();
+
+    void setServerErrorHandler(ServerErrorHandler serverErrorHandler);
 }

@@ -132,4 +132,10 @@ public class FluentLogger {
     public boolean isConnected() {
         return sender != null && sender.isConnected();
     }
+
+    public synchronized void setServerErrorHandler(ServerErrorHandler serverErrorHandler) {
+        if (sender != null) {
+            sender.setServerErrorHandler(serverErrorHandler);
+        }
+    }
 }
