@@ -1,5 +1,6 @@
 package org.fluentd.logger;
 
+import org.fluentd.logger.errorhandler.ErrorHandler;
 import org.fluentd.logger.sender.Event;
 import org.fluentd.logger.sender.NullSender;
 import org.fluentd.logger.util.MockFluentd;
@@ -228,13 +229,15 @@ public class TestFluentLogger {
         threadManager.submit(fluentd1);
 
         // start a logger
-        FluentLogger logger = FluentLogger.getLogger("testtag", host, port);
-        logger.setServerErrorHandler(new ServerErrorHandler() {
+        final FluentLogger logger = FluentLogger.getLogger("testtag", host, port);
+        final ErrorHandler errorHandler = new ErrorHandler() {
             @Override
-            public void handle(IOException ex) {
+            public void handleNetworkError(IOException ex) {
                 lastError.set(ex);
             }
-        });
+        };
+        logger.setErrorHandler(errorHandler);
+
         assertFalse(logger.isConnected());
         {
             Map<String, Object> data = new HashMap<String, Object>();
@@ -257,6 +260,7 @@ public class TestFluentLogger {
             // repeat twice to test both behaviors on socket write error and connection error
             assertNull(lastError.get());
             {
+                // writing to the closed socket
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put("k3", "v3");
                 data.put("k4", "v4");
@@ -267,6 +271,20 @@ public class TestFluentLogger {
             assertFalse(logger.isConnected());
             TimeUnit.MILLISECONDS.sleep(100);
         }
+
+        // the logger shouldn't call the error handler after calling removeErrorHandler()
+        logger.removeErrorHandler();
+        {
+            // writing to the closed socket
+            Map<String, Object> data = new HashMap<String, Object>();
+            data.put("k3", "v3");
+            data.put("k4", "v4");
+            logger.log("test01", data);
+        }
+        assertNull(lastError.get());
+        lastError.set(null);    // Clear the last error
+
+        logger.setErrorHandler(errorHandler);
 
         // run the fluentd again
         final List<Event> elist2 = new ArrayList<Event>();
@@ -313,10 +331,10 @@ public class TestFluentLogger {
         assertEquals(1, elist1.size());
         assertEquals("testtag.test01", elist1.get(0).tag);
 
-        assertEquals(3, elist2.size());
-        assertEquals("testtag.test01", elist2.get(0).tag);
-        assertEquals("testtag.test01", elist2.get(1).tag);
-        assertEquals("testtag.test01", elist2.get(2).tag);
+        assertEquals(4, elist2.size());
+        for (int i = 0; i < elist2.size(); i++) {
+            assertEquals("testtag.test01", elist2.get(i).tag);
+        }
     }
 
     @Test

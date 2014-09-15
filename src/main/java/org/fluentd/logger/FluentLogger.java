@@ -20,6 +20,7 @@ package org.fluentd.logger;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.fluentd.logger.errorhandler.ErrorHandler;
 import org.fluentd.logger.sender.Reconnector;
 import org.fluentd.logger.sender.Sender;
 
@@ -133,9 +134,22 @@ public class FluentLogger {
         return sender != null && sender.isConnected();
     }
 
-    public synchronized void setServerErrorHandler(ServerErrorHandler serverErrorHandler) {
+    public synchronized void setErrorHandler(ErrorHandler errorHandler) {
+        if (errorHandler == null) {
+            throw new IllegalArgumentException("errorHandler is null");
+        }
+
         if (sender != null) {
-            sender.setServerErrorHandler(serverErrorHandler);
+            sender.setErrorHandler(errorHandler);
         }
     }
+
+    public synchronized void removeErrorHandler() {
+        if (sender != null) {
+            sender.removeErrorHandler();
+        }
+    }
+
+
+
 }

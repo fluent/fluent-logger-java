@@ -17,7 +17,8 @@
 //
 package org.fluentd.logger.sender;
 
-import org.fluentd.logger.ServerErrorHandler;
+import org.fluentd.logger.errorhandler.ErrorHandler;
+import org.fluentd.logger.errorhandler.NullErrorHandler;
 import org.msgpack.MessagePack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,8 @@ import java.util.Map;
 public class RawSocketSender implements Sender {
 
     private static final Logger LOG = LoggerFactory.getLogger(RawSocketSender.class);
+
+    private static final ErrorHandler DEFAULT_ERROR_HANLDER = new NullErrorHandler();
 
     private MessagePack msgpack;
 
@@ -50,7 +53,7 @@ public class RawSocketSender implements Sender {
 
     private String name;
 
-    private ServerErrorHandler serverErrorHandler;
+    private ErrorHandler errorHandler = DEFAULT_ERROR_HANLDER;
 
     public RawSocketSender() {
         this("localhost", 24224);
@@ -189,12 +192,10 @@ public class RawSocketSender implements Sender {
             reconnector.clearErrorHistory();
         } catch (IOException e) {
             try {
-                if (serverErrorHandler != null) {
-                    serverErrorHandler.handle(e);
-                }
+                errorHandler.handleNetworkError(e);
             }
             catch (Exception handlerException) {
-                LOG.warn("ServerErrorHandler.handle error", handlerException);
+                LOG.warn("ErrorHandler.handleNetworkError failed", handlerException);
             }
             LOG.error(this.getClass().getName(), "flush", e);
             reconnector.addErrorHistory(System.currentTimeMillis());
@@ -230,7 +231,16 @@ public class RawSocketSender implements Sender {
     }
 
     @Override
-    public void setServerErrorHandler(ServerErrorHandler serverErrorHandler) {
-        this.serverErrorHandler = serverErrorHandler;
+    public void setErrorHandler(ErrorHandler errorHandler) {
+        if (errorHandler == null) {
+            throw new IllegalArgumentException("errorHandler is null");
+        }
+
+        this.errorHandler = errorHandler;
+    }
+
+    @Override
+    public void removeErrorHandler() {
+        this.errorHandler = DEFAULT_ERROR_HANLDER;
     }
 }
