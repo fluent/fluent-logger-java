@@ -18,7 +18,6 @@
 package org.fluentd.logger.sender;
 
 import org.fluentd.logger.errorhandler.ErrorHandler;
-import org.fluentd.logger.errorhandler.NullErrorHandler;
 import org.msgpack.MessagePack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +34,7 @@ public class RawSocketSender implements Sender {
 
     private static final Logger LOG = LoggerFactory.getLogger(RawSocketSender.class);
 
-    private static final ErrorHandler DEFAULT_ERROR_HANLDER = new NullErrorHandler();
+    private static final ErrorHandler DEFAULT_ERROR_HANLDER = new ErrorHandler() {};
 
     private MessagePack msgpack;
 
