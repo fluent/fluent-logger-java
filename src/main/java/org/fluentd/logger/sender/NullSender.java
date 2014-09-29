@@ -17,6 +17,8 @@
 //
 package org.fluentd.logger.sender;
 
+import org.fluentd.logger.errorhandler.ErrorHandler;
+
 import java.util.Map;
 
 public class NullSender implements Sender {
@@ -54,5 +56,13 @@ public class NullSender implements Sender {
     @Override
     public boolean isConnected() {
         return true;
+    }
+
+    @Override
+    public void setErrorHandler(ErrorHandler errorHandler) {
+    }
+
+    @Override
+    public void removeErrorHandler() {
     }
 }

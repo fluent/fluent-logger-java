@@ -17,6 +17,7 @@
 //
 package org.fluentd.logger.sender;
 
+import org.fluentd.logger.errorhandler.ErrorHandler;
 import org.msgpack.MessagePack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,8 @@ public class RawSocketSender implements Sender {
 
     private static final Logger LOG = LoggerFactory.getLogger(RawSocketSender.class);
 
+    private static final ErrorHandler DEFAULT_ERROR_HANLDER = new ErrorHandler() {};
+
     private MessagePack msgpack;
 
     private SocketAddress server;
@@ -48,6 +51,8 @@ public class RawSocketSender implements Sender {
     private Reconnector reconnector;
 
     private String name;
+
+    private ErrorHandler errorHandler = DEFAULT_ERROR_HANLDER;
 
     public RawSocketSender() {
         this("localhost", 24224);
@@ -185,6 +190,12 @@ public class RawSocketSender implements Sender {
             clearBuffer();
             reconnector.clearErrorHistory();
         } catch (IOException e) {
+            try {
+                errorHandler.handleNetworkError(e);
+            }
+            catch (Exception handlerException) {
+                LOG.warn("ErrorHandler.handleNetworkError failed", handlerException);
+            }
             LOG.error(this.getClass().getName(), "flush", e);
             reconnector.addErrorHistory(System.currentTimeMillis());
             close();
@@ -216,5 +227,19 @@ public class RawSocketSender implements Sender {
     @Override
     public boolean isConnected() {
         return socket != null && !socket.isClosed() && socket.isConnected() && !socket.isOutputShutdown();
+    }
+
+    @Override
+    public void setErrorHandler(ErrorHandler errorHandler) {
+        if (errorHandler == null) {
+            throw new IllegalArgumentException("errorHandler is null");
+        }
+
+        this.errorHandler = errorHandler;
+    }
+
+    @Override
+    public void removeErrorHandler() {
+        this.errorHandler = DEFAULT_ERROR_HANLDER;
     }
 }
