@@ -108,6 +108,7 @@ public class FluentLogger {
 
     public void close() {
         if (sender != null) {
+            sender.flush();
             sender.close();
             sender = null;
         }
