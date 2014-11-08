@@ -15,10 +15,10 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.*;
@@ -456,7 +456,7 @@ public class TestFluentLogger {
         int port = MockFluentd.randomPort();
         String host = "localhost";
         final List<Event> elist = new ArrayList<Event>();
-        final AtomicBoolean received = new AtomicBoolean(false);
+        final CountDownLatch latch = new CountDownLatch(1);
         MockFluentd fluentd = new MockFluentd(port, new MockFluentd.MockProcess() {
             public void process(MessagePack msgpack, Socket socket) throws IOException {
                 BufferedInputStream in = new BufferedInputStream(socket.getInputStream());
@@ -465,7 +465,7 @@ public class TestFluentLogger {
                     while (true) {
                         Event e = unpacker.read(Event.class);
                         elist.add(e);
-                        received.set(true);
+                        latch.countDown();
                     }
                     //socket.close();
                 } catch (EOFException e) {
@@ -492,9 +492,7 @@ public class TestFluentLogger {
         logger.close();
 
         // wait for fluentd's getting at least one kv pair
-        while(!received.get()) {
-            Thread.sleep(100);
-        }
+        latch.await(3, TimeUnit.SECONDS);
 
         // close mock fluentd
         fluentd.close();
