@@ -448,4 +448,60 @@ public class TestFluentLogger {
             assertEquals((i * LOOP * (N - i)), (long)counters.get(i));
         }
     }
+
+    @Test
+    public void testFlushOnClose() throws Exception {
+        // start mock fluentd
+        int port = MockFluentd.randomPort();
+        String host = "localhost";
+        final List<Event> elist = new ArrayList<Event>();
+        MockFluentd fluentd = new MockFluentd(port, new MockFluentd.MockProcess() {
+            public void process(MessagePack msgpack, Socket socket) throws IOException {
+                BufferedInputStream in = new BufferedInputStream(socket.getInputStream());
+                try {
+                    Unpacker unpacker = msgpack.createUnpacker(in);
+                    while (true) {
+                        Event e = unpacker.read(Event.class);
+                        elist.add(e);
+                    }
+                    //socket.close();
+                } catch (EOFException e) {
+                    // ignore
+                }
+            }
+        });
+
+        FixedThreadManager threadManager = new FixedThreadManager(1);
+
+        // start loggers
+        FluentLogger logger = FluentLogger.getLogger("prefix", host, port);
+        {
+            Map<String, Object> data = new HashMap<String, Object>();
+            data.put("k", "v");
+            // Fluentd hasn't started yet and the record will be buffered.
+            logger.log("tag", data);
+        }
+
+        threadManager.submit(fluentd);
+        Thread.sleep(1000);
+
+        // close loggers and it should flush the buffer
+        logger.close();
+
+        Thread.sleep(1000);
+
+        // close mock fluentd
+        fluentd.close();
+
+        // wait for unpacking event data on fluentd
+        threadManager.join();
+
+        // check data
+        assertEquals(1, elist.size());
+        Event ev = elist.get(0);
+        assertEquals("prefix.tag", ev.tag);
+        assertEquals(1, ev.data.size());
+        assertTrue(ev.data.containsKey("k"));
+        assertTrue(ev.data.containsValue("v"));
+    }
 }
