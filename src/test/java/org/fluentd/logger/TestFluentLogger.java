@@ -348,7 +348,7 @@ public class TestFluentLogger {
         FluentLogger.getLogger("tag2");
         FluentLogger.getLogger("tag3");
 
-        Map<String, FluentLogger> loggers;
+        Map<FluentLogger, String> loggers;
         {
             loggers = FluentLogger.getLoggers();
             assertEquals(3, loggers.size());
