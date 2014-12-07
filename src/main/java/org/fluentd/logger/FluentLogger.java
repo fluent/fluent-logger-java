@@ -48,7 +48,7 @@ public class FluentLogger {
     /**
      * the method is for testing
      */
-    static Map<String, FluentLogger> getLoggers() {
+    static Map<FluentLogger, String> getLoggers() {
         return factory.getLoggers();
     }
 

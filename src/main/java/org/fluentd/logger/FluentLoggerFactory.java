@@ -30,10 +30,10 @@ import org.fluentd.logger.sender.Sender;
 
 public class FluentLoggerFactory {
 
-    private final Map<String, FluentLogger> loggers;
+    private final Map<FluentLogger, String> loggers;
 
     public FluentLoggerFactory() {
-        loggers = new WeakHashMap<String, FluentLogger>();
+        loggers = new WeakHashMap<FluentLogger, String>();
     }
 
     public FluentLogger getLogger(String tagPrefix) {
@@ -51,8 +51,13 @@ public class FluentLoggerFactory {
     public synchronized FluentLogger getLogger(String tagPrefix, String host, int port, int timeout, int bufferCapacity,
             Reconnector reconnector) {
         String key = String.format("%s_%s_%d_%d_%d", new Object[] { tagPrefix, host, port, timeout, bufferCapacity });
-        if (loggers.containsKey(key)) {
-            return loggers.get(key);
+        if (loggers.containsValue(key)) {
+            for (Map.Entry<FluentLogger, String> entry : loggers.entrySet()) {
+                if (entry.getValue().equals(key)) {
+                    return entry.getKey();
+                }
+            }
+            throw new IllegalStateException();
         } else {
             Sender sender = null;
             Properties props = System.getProperties();
@@ -68,7 +73,7 @@ public class FluentLoggerFactory {
                 }
             }
             FluentLogger logger = new FluentLogger(tagPrefix, sender);
-            loggers.put(key, logger);
+            loggers.put(logger, key);
             return logger;
         }
     }
@@ -86,19 +91,19 @@ public class FluentLoggerFactory {
     /**
      * the method is for testing
      */
-    Map<String, FluentLogger> getLoggers() {
+    Map<FluentLogger, String> getLoggers() {
         return loggers;
     }
 
     public synchronized void closeAll() {
-        for (FluentLogger logger : loggers.values()) {
+        for (FluentLogger logger : loggers.keySet()) {
             logger.close();
         }
         loggers.clear();
     }
 
     public synchronized void flushAll() {
-        for (FluentLogger logger : loggers.values()) {
+        for (FluentLogger logger : loggers.keySet()) {
             logger.flush();
         }
     }
