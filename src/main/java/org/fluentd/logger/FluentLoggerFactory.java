@@ -51,31 +51,33 @@ public class FluentLoggerFactory {
     public synchronized FluentLogger getLogger(String tagPrefix, String host, int port, int timeout, int bufferCapacity,
             Reconnector reconnector) {
         String key = String.format("%s_%s_%d_%d_%d", new Object[] { tagPrefix, host, port, timeout, bufferCapacity });
-        if (loggers.containsValue(key)) {
-            for (Map.Entry<FluentLogger, String> entry : loggers.entrySet()) {
-                if (entry.getValue().equals(key)) {
-                    return entry.getKey();
+
+        for (Map.Entry<FluentLogger, String> entry : loggers.entrySet()) {
+            if (entry.getValue().equals(key)) {
+                FluentLogger found = entry.getKey();
+                if(found != null) {
+                    return found;
                 }
+                break;
             }
-            throw new IllegalStateException();
-        } else {
-            Sender sender = null;
-            Properties props = System.getProperties();
-            if (!props.containsKey(Config.FLUENT_SENDER_CLASS)) {
-                // create default sender object
-                sender = new RawSocketSender(host, port, timeout, bufferCapacity, reconnector);
-            } else {
-                String senderClassName = props.getProperty(Config.FLUENT_SENDER_CLASS);
-                try {
-                    sender = createSenderInstance(senderClassName, new Object[] { host, port, timeout, bufferCapacity });
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            FluentLogger logger = new FluentLogger(tagPrefix, sender);
-            loggers.put(logger, key);
-            return logger;
         }
+
+        Sender sender = null;
+        Properties props = System.getProperties();
+        if (!props.containsKey(Config.FLUENT_SENDER_CLASS)) {
+            // create default sender object
+            sender = new RawSocketSender(host, port, timeout, bufferCapacity, reconnector);
+        } else {
+            String senderClassName = props.getProperty(Config.FLUENT_SENDER_CLASS);
+            try {
+                sender = createSenderInstance(senderClassName, new Object[] { host, port, timeout, bufferCapacity });
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        FluentLogger logger = new FluentLogger(tagPrefix, sender);
+        loggers.put(logger, key);
+        return logger;
     }
 
     @SuppressWarnings("unchecked")
