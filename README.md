@@ -22,7 +22,7 @@ Java >= 1.6
 
 ### Install with all-in-one jar file
 
-You can download all-in-one jar file for Fluent Logger for Java.
+You can download all-in-one jar file for Fluent Logger for Java.(The URL seems not working, we will soon repair that.)
 
     $ wget http://fluentd.org/releases/java/fluent-logger-${logger.version}-jar-with-dependencies.jar
 
