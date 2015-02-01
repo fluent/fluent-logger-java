@@ -7,7 +7,7 @@ logout, purchase, follow, etc).  Analyzing these event logs can be quite
 valuable for improving services.  However, collecting these logs easily and 
 reliably is a challenging task.
 
-Fluentd solves the problem by having: easy installation, small footprint, plugins
+Fluentd solves the problem by having: easy installation, small footprint, plugins,
 reliable buffering, log forwarding, etc.
 
   * Fluentd website: [http://github.com/fluent/fluentd](http://github.com/fluent/fluentd)
@@ -22,7 +22,7 @@ Java >= 1.6
 
 ### Install with all-in-one jar file
 
-You can download all-in-one jar file for Fluent Logger for Java.
+You can download all-in-one jar file for Fluent Logger for Java.(the link below is invalid and needs to be fixed.)
 
     $ wget http://fluentd.org/releases/java/fluent-logger-${logger.version}-jar-with-dependencies.jar
 
@@ -92,7 +92,7 @@ Then, please create the events like this.  This will send the event to fluentd,
 with tag 'app.follow' and the attributes 'from' and 'to'.
 
 Close method in FluentLogger class should be called explicitly when application 
-is finished.  The method close socket connection with the fluentd.
+is finished.  The method closes socket connection with the fluentd.
 
     FluentLogger.close();
 
