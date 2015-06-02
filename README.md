@@ -71,7 +71,7 @@ The following program is a small example of Fluent Logger for Java.
 
         public void doApplicationLogic() {
             // ...
-            Map<String, String> data = new HashMap<String, String>();
+            Map<String, Object> data = new HashMap<String, Object>();
             data.put("from", "userA");
             data.put("to", "userB");
             LOG.log("follow", data);
