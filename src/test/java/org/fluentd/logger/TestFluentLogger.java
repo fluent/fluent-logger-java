@@ -3,6 +3,7 @@ package org.fluentd.logger;
 import org.fluentd.logger.errorhandler.ErrorHandler;
 import org.fluentd.logger.sender.Event;
 import org.fluentd.logger.sender.NullSender;
+import org.fluentd.logger.sender.Sender;
 import org.fluentd.logger.util.MockFluentd;
 import org.junit.Test;
 import org.msgpack.MessagePack;
@@ -507,5 +508,11 @@ public class TestFluentLogger {
         assertEquals(1, ev.data.size());
         assertTrue(ev.data.containsKey("k"));
         assertTrue(ev.data.containsValue("v"));
+    }
+
+    public void testGetSender() {
+        FluentLogger logger = FluentLogger.getLogger("prefix");
+        Sender sender = logger.getSender();
+        assertNotNull(sender);
     }
 }

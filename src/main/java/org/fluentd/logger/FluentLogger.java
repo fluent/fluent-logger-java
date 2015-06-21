@@ -151,6 +151,7 @@ public class FluentLogger {
         }
     }
 
-
-
+    public Sender getSender() {
+        return sender;
+    }
 }
