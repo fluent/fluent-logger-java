@@ -62,6 +62,10 @@ public class AsyncRawSocketSender implements Sender {
 
     private static final ExecutorService flusher = Executors.newSingleThreadExecutor();
 
+    private static final ErrorHandler DEFAULT_ERROR_HANDLER = new ErrorHandler() {};
+
+    private ErrorHandler errorHandler = DEFAULT_ERROR_HANDLER;
+
     public AsyncRawSocketSender() {
         this("localhost", 24224);
     }
@@ -119,11 +123,15 @@ public class AsyncRawSocketSender implements Sender {
 
     @Override
     public void setErrorHandler(ErrorHandler errorHandler) {
-        sender.setErrorHandler(errorHandler);
+        if (errorHandler == null) {
+            throw new IllegalArgumentException("errorHandler is null");
+        }
+
+        this.errorHandler = errorHandler;
     }
 
     @Override
     public void removeErrorHandler() {
-        sender.removeErrorHandler();
+        this.errorHandler = DEFAULT_ERROR_HANDLER;
     }
 }
