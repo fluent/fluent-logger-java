@@ -1,5 +1,7 @@
 # Fluent Logger for Java
 
+[![Build Status](https://travis-ci.org/fluent/fluent-logger-java.svg?branch=master)](https://travis-ci.org/fluent/fluent-logger-java)
+
 ## Overview
 
 Many web/mobile applications generate huge amount of event logs (c,f. login,
