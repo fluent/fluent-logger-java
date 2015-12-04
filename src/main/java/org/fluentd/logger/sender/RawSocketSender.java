@@ -78,13 +78,9 @@ public class RawSocketSender implements Sender {
     }
 
     private void connect() throws IOException {
-        try {
-            socket = new Socket();
-            socket.connect(server, timeout);
-            out = new BufferedOutputStream(socket.getOutputStream());
-        } catch (IOException e) {
-            throw e;
-        }
+        socket = new Socket();
+        socket.connect(server, timeout);
+        out = new BufferedOutputStream(socket.getOutputStream());
     }
 
     private void reconnect() throws IOException {
@@ -131,10 +127,10 @@ public class RawSocketSender implements Sender {
 
     protected boolean emit(Event event) {
         if (LOG.isTraceEnabled()) {
-            LOG.trace(String.format("Created %s", new Object[]{event}));
+            LOG.trace("Created {}", event);
         }
 
-        byte[] bytes = null;
+        byte[] bytes;
         try {
             // serialize tag, timestamp and data
             bytes = msgpack.write(event);
