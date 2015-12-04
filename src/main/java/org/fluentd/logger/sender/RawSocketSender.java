@@ -34,7 +34,7 @@ public class RawSocketSender implements Sender {
 
     private static final Logger LOG = LoggerFactory.getLogger(RawSocketSender.class);
 
-    private static final ErrorHandler DEFAULT_ERROR_HANLDER = new ErrorHandler() {};
+    private static final ErrorHandler DEFAULT_ERROR_HANDLER = new ErrorHandler() {};
 
     private MessagePack msgpack;
 
@@ -52,7 +52,7 @@ public class RawSocketSender implements Sender {
 
     private String name;
 
-    private ErrorHandler errorHandler = DEFAULT_ERROR_HANLDER;
+    private ErrorHandler errorHandler = DEFAULT_ERROR_HANDLER;
 
     public RawSocketSender() {
         this("localhost", 24224);
@@ -240,6 +240,6 @@ public class RawSocketSender implements Sender {
 
     @Override
     public void removeErrorHandler() {
-        this.errorHandler = DEFAULT_ERROR_HANLDER;
+        this.errorHandler = DEFAULT_ERROR_HANDLER;
     }
 }
