@@ -7,7 +7,7 @@ import java.util.Deque;
 import java.util.LinkedList;
 
 /**
- * Calculate exponential delay for reconnecting
+ * Handles constant delay for reconnecting. The default delay is 50 ms.
  */
 public class ConstantDelayReconnector implements Reconnector {
     private static final Logger LOG = LoggerFactory.getLogger(ConstantDelayReconnector.class);

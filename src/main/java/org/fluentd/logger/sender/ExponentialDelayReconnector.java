@@ -3,7 +3,8 @@ package org.fluentd.logger.sender;
 import java.util.LinkedList;
 
 /**
- * Calcurate exponential delay for reconnecting
+ * Calculates exponential delay for reconnecting. The start delay is 50ms and exponentionally grows to max 60 seconds in
+ * function of the number of connection errors.
  */
 public class ExponentialDelayReconnector implements Reconnector {
 
@@ -61,6 +62,6 @@ public class ExponentialDelayReconnector implements Reconnector {
             suppressMillis = waitMaxMillis;
         }
 
-        return (timestamp - errorHistory.getLast()) > suppressMillis;
+        return (timestamp - errorHistory.getLast()) >= suppressMillis;
     }
 }
