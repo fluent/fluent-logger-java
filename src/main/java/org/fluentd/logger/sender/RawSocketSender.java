@@ -186,6 +186,7 @@ public class RawSocketSender implements Sender {
             clearBuffer();
             reconnector.clearErrorHistory();
         } catch (IOException e) {
+            pendings.reset(); // reset to old position in case of IO error
             try {
                 errorHandler.handleNetworkError(e);
             }
@@ -200,6 +201,7 @@ public class RawSocketSender implements Sender {
 
     synchronized byte[] getBuffer() {
         int len = pendings.position();
+        pendings.mark(); // mark old position in case of IO error
         pendings.position(0);
         byte[] ret = new byte[len];
         pendings.get(ret, 0, len);
