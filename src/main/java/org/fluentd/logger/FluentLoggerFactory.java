@@ -34,7 +34,7 @@ public class FluentLoggerFactory {
     private final Map<FluentLogger, String> loggers;
 
     public FluentLoggerFactory() {
-        loggers = Collections.synchronizedMap(new WeakHashMap<FluentLogger, String>());
+        loggers = new WeakHashMap<FluentLogger, String>();
     }
 
     public FluentLogger getLogger(String tagPrefix) {
@@ -49,7 +49,7 @@ public class FluentLoggerFactory {
         return getLogger(tagPrefix, host, port, timeout, bufferCapacity, new ExponentialDelayReconnector());
     }
 
-    public FluentLogger getLogger(String tagPrefix, String host, int port, int timeout, int bufferCapacity,
+    public synchronized FluentLogger getLogger(String tagPrefix, String host, int port, int timeout, int bufferCapacity,
             Reconnector reconnector) {
         String key = String.format("%s_%s_%d_%d_%d", new Object[] { tagPrefix, host, port, timeout, bufferCapacity });
 
