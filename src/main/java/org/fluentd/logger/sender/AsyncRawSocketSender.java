@@ -108,7 +108,7 @@ public class AsyncRawSocketSender implements Sender {
         final RawSocketSender sender = this.sender;
         senderTask.execute(new EmitRunnable(tag, data, sender, timestamp));
 
-        return sender.isConnected() || reconnector.enableReconnection(System.currentTimeMillis());
+        return this.isConnected() || reconnector.enableReconnection(System.currentTimeMillis());
     }
 
     @Override
@@ -117,7 +117,7 @@ public class AsyncRawSocketSender implements Sender {
     }
 
     @Override
-    public boolean isConnected() {
+    public synchronized boolean isConnected() {
         return sender.isConnected();
     }
 
