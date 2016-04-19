@@ -60,7 +60,7 @@ public class AsyncRawSocketSender implements Sender {
     @SuppressWarnings("unused")
     private static final Logger logger = LoggerFactory.getLogger(AsyncRawSocketSender.class);
 
-    private final ExecutorService flusher = Executors.newSingleThreadExecutor();
+    private final ExecutorService senderTask = Executors.newSingleThreadExecutor();
 
     private static final ErrorHandler DEFAULT_ERROR_HANDLER = new ErrorHandler() {};
 
@@ -90,7 +90,7 @@ public class AsyncRawSocketSender implements Sender {
     @Override
     public synchronized void flush() {
         final RawSocketSender sender = this.sender;
-        flusher.execute(new FlushRunnable(sender));
+        senderTask.execute(new FlushRunnable(sender));
     }
 
     @Override
@@ -106,7 +106,7 @@ public class AsyncRawSocketSender implements Sender {
     @Override
     public boolean emit(final String tag, final long timestamp, final Map<String, Object> data) {
         final RawSocketSender sender = this.sender;
-        flusher.execute(new EmitRunnable(tag, data, sender, timestamp));
+        senderTask.execute(new EmitRunnable(tag, data, sender, timestamp));
 
         return sender.isConnected() || reconnector.enableReconnection(System.currentTimeMillis());
     }
