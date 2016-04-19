@@ -81,30 +81,6 @@ public class FluentLoggerFactory {
         return logger;
     }
 
-    public FluentLogger getLogger(String tagPrefix, String host, int port, int timeout, int bufferCapacity,
-            Sender sender) {
-        if (sender == null) {
-            return getLogger(tagPrefix, host, port, timeout, bufferCapacity);
-        }
-        String key = String.format("%s_%s_%d_%d_%d_%s", new Object[] { tagPrefix, host, port, timeout, bufferCapacity, sender.getName() });
-        if (loggers.containsValue(key)) {
-            for (Map.Entry<FluentLogger, String> entry : loggers.entrySet()) {
-                if (entry.getValue().equals(key)) {
-                    FluentLogger found = entry.getKey();
-                    if(found != null) {
-                        return found;
-                    }
-                    break;
-                }
-            }
-            return getLogger(tagPrefix, host, port, timeout, bufferCapacity);
-        } else {
-            FluentLogger logger = new FluentLogger(tagPrefix, sender);
-            loggers.put(logger, key);
-            return logger;
-        }
-    }
-
     @SuppressWarnings("unchecked")
     private Sender createSenderInstance(final String className, final Object[] params) throws ClassNotFoundException,
             SecurityException, NoSuchMethodException, IllegalArgumentException, InstantiationException,
