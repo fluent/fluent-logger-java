@@ -60,7 +60,7 @@ public class AsyncRawSocketSender implements Sender {
     @SuppressWarnings("unused")
     private static final Logger logger = LoggerFactory.getLogger(AsyncRawSocketSender.class);
 
-    private static final ExecutorService flusher = Executors.newSingleThreadExecutor();
+    private final ExecutorService flusher = Executors.newSingleThreadExecutor();
 
     private static final ErrorHandler DEFAULT_ERROR_HANDLER = new ErrorHandler() {};
 
