@@ -87,7 +87,7 @@ public class FluentLoggerFactory {
             return getLogger(tagPrefix, host, port, timeout, bufferCapacity);
         }
         String key = String.format("%s_%s_%d_%d_%d_%s", new Object[] { tagPrefix, host, port, timeout, bufferCapacity, sender == null ? "null" : sender .getName() });
-        if (loggers.containsKey(key)) {
+        if (loggers.containsValue(key)) {
             for (Map.Entry<FluentLogger, String> entry : loggers.entrySet()) {
                 if (entry.getValue().equals(key)) {
                     FluentLogger found = entry.getKey();
