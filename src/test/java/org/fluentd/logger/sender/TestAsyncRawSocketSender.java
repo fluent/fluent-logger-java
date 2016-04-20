@@ -248,4 +248,93 @@ public class TestAsyncRawSocketSender {
         assertTrue(socketFinished.get());
         executor.shutdownNow();
     }
+
+    @Test
+    public void testBufferingAndResending() throws InterruptedException, IOException {
+        final ConcurrentLinkedQueue<Event> readEvents = new ConcurrentLinkedQueue<Event>();
+        final CountDownLatch countDownLatch = new CountDownLatch(4);
+        int port = MockFluentd.randomPort();
+        MockProcess mockProcess = new MockFluentd.MockProcess() {
+            public void process(MessagePack msgpack, Socket socket) throws IOException {
+                BufferedInputStream in = new BufferedInputStream(socket.getInputStream());
+                try {
+                    Unpacker unpacker = msgpack.createUnpacker(in);
+                    while (true) {
+                        Event e = unpacker.read(Event.class);
+                        readEvents.add(e);
+                        countDownLatch.countDown();
+                    }
+                } catch (EOFException e) {
+                    // e.printStackTrace();
+                }
+            }
+        };
+
+        MockFluentd fluentd = new MockFluentd(port, mockProcess);
+        fluentd.start();
+
+        Sender asyncSender = new AsyncRawSocketSender("localhost", port);
+        assertFalse(asyncSender.isConnected());
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.put("key0", "v0");
+        boolean emitted1 = asyncSender.emit("tag0", data);
+        assertTrue(emitted1);
+
+        // close fluentd to make the next sending failed
+        TimeUnit.MILLISECONDS.sleep(500);
+
+        fluentd.closeClientSockets();
+
+        TimeUnit.MILLISECONDS.sleep(500);
+
+        data = new HashMap<String, Object>();
+        data.put("key0", "v1");
+        boolean emitted2 = asyncSender.emit("tag0", data);
+        assertTrue(emitted2);
+
+        // wait to avoid the suppression of reconnection
+        TimeUnit.MILLISECONDS.sleep(500);
+
+        data = new HashMap<String, Object>();
+        data.put("key0", "v2");
+        boolean emitted3 = asyncSender.emit("tag0", data);
+        assertTrue(emitted3);
+
+        data = new HashMap<String, Object>();
+        data.put("key0", "v3");
+        boolean emitted4 = asyncSender.emit("tag0", data);
+        assertTrue(emitted4);
+
+        countDownLatch.await(500, TimeUnit.MILLISECONDS);
+
+        asyncSender.close();
+
+        fluentd.close();
+
+        assertEquals(4, readEvents.size());
+
+        Event event = readEvents.poll();
+        assertEquals("tag0", event.tag);
+        assertEquals(1, event.data.size());
+        assertTrue(event.data.keySet().contains("key0"));
+        assertTrue(event.data.values().contains("v0"));
+
+        event = readEvents.poll();
+        assertEquals("tag0", event.tag);
+        assertEquals(1, event.data.size());
+        assertTrue(event.data.keySet().contains("key0"));
+        assertTrue(event.data.values().contains("v1"));
+
+        event = readEvents.poll();
+        assertEquals("tag0", event.tag);
+        assertEquals(1, event.data.size());
+        assertTrue(event.data.keySet().contains("key0"));
+        assertTrue(event.data.values().contains("v2"));
+
+        event = readEvents.poll();
+        assertEquals("tag0", event.tag);
+        assertEquals(1, event.data.size());
+        assertTrue(event.data.keySet().contains("key0"));
+        assertTrue(event.data.values().contains("v3"));
+    }
 }
