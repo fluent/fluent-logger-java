@@ -411,6 +411,7 @@ public class TestAsyncRawSocketSender {
         // check data
         assertEquals(0, bufferFull.getCount());
         // check elist size. But, it cannot detect correct elist size because async sender runs independently.
-        assert(i - 5 <= elist.size()|| elist.size() < i + 5);
+        final int LOOSEN_CONSTRAINTS = 5;
+        assert(i - LOOSEN_CONSTRAINTS <= elist.size()|| elist.size() < i + LOOSEN_CONSTRAINTS);
     }
 }
