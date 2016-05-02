@@ -72,6 +72,7 @@ public class TestFluentLogger {
 
         FixedThreadManager threadManager = new FixedThreadManager(1);
         threadManager.submit(fluentd);
+        fluentd.waitUntilReady();
 
         // start loggers
         FluentLogger logger = FluentLogger.getLogger("testtag", host, port);
@@ -139,6 +140,7 @@ public class TestFluentLogger {
         });
         FixedThreadManager threadManager = new FixedThreadManager(1);
         threadManager.submit(fluentd);
+        fluentd.waitUntilReady();
 
         // start loggers
         FluentLogger[] loggers = new FluentLogger[loggerCount];
@@ -229,6 +231,7 @@ public class TestFluentLogger {
             }
         });
         threadManager.submit(fluentd1);
+        fluentd1.waitUntilReady();
 
         // start a logger
         final FluentLogger logger = FluentLogger.getLogger("testtag", host, port);
@@ -306,9 +309,8 @@ public class TestFluentLogger {
             }
         });
         threadManager.submit(fluentd2);
+        fluentd2.waitUntilReady();
 
-        // the logger should send an event successfully
-        TimeUnit.MILLISECONDS.sleep(500);
         {
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("k5", "v5");
@@ -400,7 +402,7 @@ public class TestFluentLogger {
 
         FixedThreadManager threadManager = new FixedThreadManager(1);
         threadManager.submit(fluentd);
-        Thread.sleep(1000);
+        fluentd.waitUntilReady();
 
         final FluentLogger logger = FluentLogger.getLogger(null, host, port);
         ExecutorService executorService = Executors.newFixedThreadPool(N);
@@ -487,7 +489,7 @@ public class TestFluentLogger {
         }
 
         threadManager.submit(fluentd);
-        Thread.sleep(1000);
+        fluentd.waitUntilReady();
 
         // close loggers and it should flush the buffer
         logger.close();
