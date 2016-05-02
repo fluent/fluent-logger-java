@@ -51,6 +51,7 @@ public class TestRawSocketSender {
             }
         });
         fluentd.start();
+        fluentd.waitUntilReady();
 
         // start senders
         Sender sender = new RawSocketSender("localhost", port);
@@ -113,6 +114,7 @@ public class TestRawSocketSender {
             }
         });
         fluentd.start();
+        fluentd.waitUntilReady();
 
         // start senders
         Sender sender = new RawSocketSender("localhost", port);
@@ -164,6 +166,8 @@ public class TestRawSocketSender {
             }
         });
         fluentds[0].start();
+        fluentds[0].waitUntilReady();
+
         ports[1] = MockFluentd.randomPort();
         elists[1] = new ArrayList<Event>();
         fluentds[1] = new MockFluentd(ports[1], new MockFluentd.MockProcess() {
@@ -182,6 +186,7 @@ public class TestRawSocketSender {
             }
         });
         fluentds[1].start();
+        fluentds[1].waitUntilReady();
 
         // start senders
         Sender[] senders = new Sender[2];
@@ -274,6 +279,7 @@ public class TestRawSocketSender {
 
         MockFluentd fluentd = new MockFluentd(port, mockProcess);
         fluentd.start();
+        fluentd.waitUntilReady();
 
         Sender sender = new RawSocketSender("localhost", port);
         assertFalse(sender.isConnected());
