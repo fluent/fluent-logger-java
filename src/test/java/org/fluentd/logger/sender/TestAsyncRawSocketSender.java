@@ -49,6 +49,7 @@ public class TestAsyncRawSocketSender {
             }
         });
         fluentd.start();
+        fluentd.waitUntilReady();
 
         // start asyncSenders
         Sender asyncSender = new AsyncRawSocketSender("localhost", port);
@@ -111,6 +112,7 @@ public class TestAsyncRawSocketSender {
             }
         });
         fluentd.start();
+        fluentd.waitUntilReady();
 
         // start asyncSenders
         Sender asyncSender = new AsyncRawSocketSender("localhost", port);
@@ -162,6 +164,7 @@ public class TestAsyncRawSocketSender {
             }
         });
         fluentds[0].start();
+        fluentds[0].waitUntilReady();
         ports[1] = MockFluentd.randomPort();
         elists[1] = new ArrayList<Event>();
         fluentds[1] = new MockFluentd(ports[1], new MockFluentd.MockProcess() {
@@ -180,6 +183,7 @@ public class TestAsyncRawSocketSender {
             }
         });
         fluentds[1].start();
+        fluentds[1].waitUntilReady();
 
         // start AsyncSenders
         Sender[] asyncSenders = new Sender[2];
@@ -272,6 +276,7 @@ public class TestAsyncRawSocketSender {
 
         MockFluentd fluentd = new MockFluentd(port, mockProcess);
         fluentd.start();
+        fluentd.waitUntilReady();
 
         Sender asyncSender = new AsyncRawSocketSender("localhost", port);
         assertFalse(asyncSender.isConnected());
@@ -369,6 +374,7 @@ public class TestAsyncRawSocketSender {
                 try {
                     bufferFull.await(20, TimeUnit.SECONDS);
                     fluentd.start();
+                    fluentd.waitUntilReady();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
