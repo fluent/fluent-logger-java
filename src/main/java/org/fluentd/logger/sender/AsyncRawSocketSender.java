@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 /**
  * An asynchronous wrapper around RawSocketSender
  *
+ * This feature is highly experimental.
+ *
  * @author mxk
  *
  */
