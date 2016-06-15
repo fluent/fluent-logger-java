@@ -80,6 +80,12 @@
       <version>4.8.2</version>
       <scope>test</scope>
     </dependency>
+    <!-- http://mvnrepository.com/artifact/com.kohlschutter.junixsocket/junixsocket-common -->
+    <dependency>
+      <groupId>com.kohlschutter.junixsocket</groupId>
+      <artifactId>junixsocket-common</artifactId>
+      <version>2.0.4</version>
+    </dependency>
   </dependencies>
 
   <build>
