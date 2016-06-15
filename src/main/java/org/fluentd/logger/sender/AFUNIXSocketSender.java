@@ -10,9 +10,6 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
@@ -44,11 +41,6 @@ public class AFUNIXSocketSender implements Sender {
     private ErrorHandler errorHandler = DEFAULT_ERROR_HANDLER;
 
     private String defaultSocketFilePath = "";
-
-    // TODO:
-//    public AFUNIXSocketSender() {
-//        this("localhost", 24224);
-//    }
 
     // TODO:
     public AFUNIXSocketSender(File socketFile, int port) {
@@ -119,6 +111,7 @@ public class AFUNIXSocketSender implements Sender {
 
     @Override
     public boolean emit(String tag, Map<String, Object> data) {
+        System.out.println(">>emit");
         return emit(tag, System.currentTimeMillis() / 1000, data);
     }
 
