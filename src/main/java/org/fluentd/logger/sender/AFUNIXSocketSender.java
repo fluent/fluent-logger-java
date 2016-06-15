@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -42,34 +43,41 @@ public class AFUNIXSocketSender implements Sender {
 
     private ErrorHandler errorHandler = DEFAULT_ERROR_HANDLER;
 
-    // TODO:
-    public AFUNIXSocketSender() {
-        this("localhost", 24224);
-    }
+    private String defaultSocketFilePath = "";
 
     // TODO:
-    public AFUNIXSocketSender(String host, int port) {
-        this(host, port, 3 * 1000, 8 * 1024 * 1024);
+//    public AFUNIXSocketSender() {
+//        this("localhost", 24224);
+//    }
+
+    // TODO:
+    public AFUNIXSocketSender(File socketFile, int port) {
+        this(socketFile, port, 3 * 1000, 8 * 1024 * 1024);
     }
 
     // TODO;
-    public AFUNIXSocketSender(String host, int port, int timeout, int bufferCapacity) {
-        this(host, port, timeout, bufferCapacity, new ExponentialDelayReconnector());
+    public AFUNIXSocketSender(File socketFile, int port, int timeout, int bufferCapacity) {
+        this(socketFile, port, timeout, bufferCapacity, new ExponentialDelayReconnector());
     }
 
-    public AFUNIXSocketSender(String host, int port, int timeout, int bufferCapacity, Reconnector reconnector) {
+    public AFUNIXSocketSender(File socketFile, int port, int timeout, int bufferCapacity, Reconnector reconnector) {
         msgpack = new MessagePack();
         msgpack.register(Event.class, Event.EventTemplate.INSTANCE);
         pendings = ByteBuffer.allocate(bufferCapacity);
-        server = new InetSocketAddress(host, port);     // TODO
-        this.reconnector = reconnector;
-        name = String.format("%s_%d_%d_%d", host, port, timeout, bufferCapacity);
-        this.timeout = timeout;
+
+        try {
+            server = new AFUNIXSocketAddress(socketFile, port);
+            this.reconnector = reconnector;
+            name = String.format("%s_%d_%d_%d", socketFile.toString(), port, timeout, bufferCapacity);
+            this.timeout = timeout;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void connect() throws IOException {
         try {
-            socket = new Socket();                      // TODO
+            socket = AFUNIXSocket.newInstance();
             socket.connect(server, timeout);
             out = new BufferedOutputStream(socket.getOutputStream());
         } catch (IOException e) {
