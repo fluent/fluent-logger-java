@@ -102,6 +102,18 @@ public class FluentLogger {
         }
     }
 
+    public boolean log(String tag, Map<String, Object> data, boolean isAFUNIXSocket) {
+
+        if (isAFUNIXSocket) {
+            // routes to AFUNIXSocketSender
+            return log(tag, data, 0);
+        }
+        else {
+            // routes to RawSocketSender
+            return log(tag, data, 0);
+        }
+    }
+
     public void flush() {
         sender.flush();
     }

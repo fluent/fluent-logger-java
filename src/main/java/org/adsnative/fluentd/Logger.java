@@ -18,9 +18,10 @@ public class Logger {
         data.put("from", "userA");
         data.put("to", "userB");
 
-        System.out.println("Logging.. ");
         LOG.log("follow", data);
         // ...
+
+        System.out.println("Done.");
     }
 
     public static void main(String[] args) {
