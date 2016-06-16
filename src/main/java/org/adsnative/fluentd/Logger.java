@@ -13,23 +13,17 @@ import java.util.Properties;
 
 public class Logger {
 
-    private static FluentLogger LOG = FluentLogger.getLogger("app");
-    private static FluentLogger xLOG = FluentLogger.getUnixLogger("app");
-
+//    private static FluentLogger LOG = FluentLogger.getLogger("app");
+    private static FluentLogger LOG = FluentLogger.getUnixLogger("app");
 
     public void doApplicationLogic() {
 
-        System.out.println("init -> application logic");
+        System.out.println("Starting..");
 
-        // ...
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("from", "userA");
-        data.put("to", "userB");
-
+        Map<String, Object> data = getSomeObjectMap();
         LOG.log("follow", data);
-        // ...
 
-        System.out.println("Done.");
+        System.out.println("Done!");
     }
 
     public static void main(String[] args) {
@@ -42,15 +36,12 @@ public class Logger {
 
     private void testAFUNIXSocket() {
 
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("from", "userA");
-        data.put("to", "userB");
+        Map<String, Object> data = getSomeObjectMap();
 
         File socketFile = new File("/etc/socket-test");
         AFUNIXSocketSender sender = new AFUNIXSocketSender(socketFile, 1045);
 
         sender.emit("af-app", data);
-
         System.out.println("Done sender !");
     }
 
@@ -61,5 +52,12 @@ public class Logger {
         if (!props.containsKey(Config.FLUENT_SENDER_CLASS)) {
             System.out.println("props does not contain fluent_sender_class");
         }
+    }
+
+    private Map<String, Object> getSomeObjectMap() {
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.put("from", "userA");
+        data.put("to", "userB");
+        return data;
     }
 }

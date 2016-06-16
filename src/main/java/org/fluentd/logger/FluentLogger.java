@@ -34,6 +34,7 @@ public class FluentLogger {
     }
 
     public static FluentLogger getUnixLogger(String tagPrefix) {
+
         String socketFilePath = "/etc/socketname";
         File socketFile = new File(socketFilePath);
         int port = 1025;

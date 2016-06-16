@@ -47,7 +47,6 @@ public class AFUNIXSocketSender implements Sender {
         this(socketFile, port, 3 * 1000, 8 * 1024 * 1024);
     }
 
-    // TODO;
     public AFUNIXSocketSender(File socketFile, int port, int timeout, int bufferCapacity) {
         this(socketFile, port, timeout, bufferCapacity, new ExponentialDelayReconnector());
     }
@@ -111,7 +110,7 @@ public class AFUNIXSocketSender implements Sender {
 
     @Override
     public boolean emit(String tag, Map<String, Object> data) {
-        System.out.println(">>emit");
+        System.out.println(">> AF_UNIX Emit");
         return emit(tag, System.currentTimeMillis() / 1000, data);
     }
 

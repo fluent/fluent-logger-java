@@ -64,9 +64,7 @@ public class FluentLoggerFactory {
         Sender sender = null;
         Properties props = System.getProperties();
         if (!props.containsKey(Config.FLUENT_SENDER_CLASS)) {
-            // create default sender object
-//            sender = new RawSocketSender(host, port, timeout, bufferCapacity, reconnector);
-            sender = new AFUNIXSocketSender(new File("/etc/socketname"), port, timeout, bufferCapacity, reconnector);
+            sender = new RawSocketSender(host, port, timeout, bufferCapacity, reconnector);
         } else {
             String senderClassName = props.getProperty(Config.FLUENT_SENDER_CLASS);
             try {
@@ -133,6 +131,7 @@ public class FluentLoggerFactory {
 
         // TODO: check fluentd conditions
         Sender sender = new AFUNIXSocketSender(new File("/etc/socketname"), port, timeout, bufferCapacity, reconnector);
+        System.out.println("Created AFUNIXSocketSender");
 
         FluentLogger logger = new FluentLogger(tagPrefix, sender);
         loggers.put(logger, key);
