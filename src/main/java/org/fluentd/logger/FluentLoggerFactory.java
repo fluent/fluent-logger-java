@@ -115,8 +115,6 @@ public class FluentLoggerFactory {
     public synchronized FluentLogger getUnixLogger(String tagPrefix, File socketFile, int port, int timeout, int bufferCapacity,
                                                    Reconnector reconnector) {
 
-        System.out.println("UNIX Logger Started !");
-
         String key = String.format("%s_%s_%d_%d_%d", new Object[] { tagPrefix, socketFile.toString(), port, timeout, bufferCapacity });
 
         for (Map.Entry<FluentLogger, String> entry : loggers.entrySet()) {
@@ -129,9 +127,7 @@ public class FluentLoggerFactory {
             }
         }
 
-        // TODO: check fluentd conditions
         Sender sender = new AFUNIXSocketSender(new File("/etc/socketname"), port, timeout, bufferCapacity, reconnector);
-        System.out.println("Created AFUNIXSocketSender");
 
         FluentLogger logger = new FluentLogger(tagPrefix, sender);
         loggers.put(logger, key);

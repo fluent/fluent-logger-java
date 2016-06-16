@@ -110,7 +110,6 @@ public class AFUNIXSocketSender implements Sender {
 
     @Override
     public boolean emit(String tag, Map<String, Object> data) {
-        System.out.println(">> AF_UNIX Emit");
         return emit(tag, System.currentTimeMillis() / 1000, data);
     }
 

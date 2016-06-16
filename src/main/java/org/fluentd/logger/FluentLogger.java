@@ -34,10 +34,15 @@ public class FluentLogger {
     }
 
     public static FluentLogger getUnixLogger(String tagPrefix) {
-
-        String socketFilePath = "/etc/socketname";
-        File socketFile = new File(socketFilePath);
+        String socketFilePath = "/tmp/socketname";
         int port = 1025;
+
+        File socketFile = new File(socketFilePath);
+        return factory.getUnixLogger(tagPrefix, socketFile, port);
+    }
+
+    public static FluentLogger getUnixLogger(String tagPrefix, String socketFilePath, int port) {
+        File socketFile = new File(socketFilePath);
         return factory.getUnixLogger(tagPrefix, socketFile, port);
     }
 
