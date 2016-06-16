@@ -17,6 +17,7 @@
 //
 package org.fluentd.logger;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,6 +31,13 @@ public class FluentLogger {
 
     public static FluentLogger getLogger(String tagPrefix) {
         return factory.getLogger(tagPrefix, "localhost", 24224);
+    }
+
+    public static FluentLogger getUnixLogger(String tagPrefix) {
+        String socketFilePath = "/etc/socketname";
+        File socketFile = new File(socketFilePath);
+        int port = 1025;
+        return factory.getUnixLogger(tagPrefix, socketFile, port);
     }
 
     public static FluentLogger getLogger(String tagPrefix, String host, int port) {

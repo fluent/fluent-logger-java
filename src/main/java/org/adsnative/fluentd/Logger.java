@@ -14,6 +14,8 @@ import java.util.Properties;
 public class Logger {
 
     private static FluentLogger LOG = FluentLogger.getLogger("app");
+    private static FluentLogger xLOG = FluentLogger.getUnixLogger("app");
+
 
     public void doApplicationLogic() {
 
@@ -33,9 +35,9 @@ public class Logger {
     public static void main(String[] args) {
         Logger tf = new Logger();
 
-//        tf.doApplicationLogic();
+        tf.doApplicationLogic();
 //        tf.checkSystemProperties();
-        tf.testAFUNIXSocket();
+//        tf.testAFUNIXSocket();
     }
 
     private void testAFUNIXSocket() {

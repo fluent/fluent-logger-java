@@ -26,6 +26,7 @@ import java.util.WeakHashMap;
 
 import org.fluentd.logger.sender.*;
 
+@SuppressWarnings("ALL")
 public class FluentLoggerFactory {
 
     private final Map<FluentLogger, String> loggers;
@@ -109,4 +110,32 @@ public class FluentLoggerFactory {
         }
     }
 
+    public FluentLogger getUnixLogger(String tagPrefix, File socketFile, int port) {
+        return getUnixLogger(tagPrefix, socketFile, port, 3 * 1000, 1 * 1024 * 1024, new ExponentialDelayReconnector());
+    }
+
+    public synchronized FluentLogger getUnixLogger(String tagPrefix, File socketFile, int port, int timeout, int bufferCapacity,
+                                                   Reconnector reconnector) {
+
+        System.out.println("UNIX Logger Started !");
+
+        String key = String.format("%s_%s_%d_%d_%d", new Object[] { tagPrefix, socketFile.toString(), port, timeout, bufferCapacity });
+
+        for (Map.Entry<FluentLogger, String> entry : loggers.entrySet()) {
+            if (entry.getValue().equals(key)) {
+                FluentLogger found = entry.getKey();
+                if(found != null) {
+                    return found;
+                }
+                break;
+            }
+        }
+
+        // TODO: check fluentd conditions
+        Sender sender = new AFUNIXSocketSender(new File("/etc/socketname"), port, timeout, bufferCapacity, reconnector);
+
+        FluentLogger logger = new FluentLogger(tagPrefix, sender);
+        loggers.put(logger, key);
+        return logger;
+    }
 }
