@@ -81,14 +81,7 @@
       <scope>test</scope>
     </dependency>
 
-    <!--&lt;!&ndash; http://mvnrepository.com/artifact/com.kohlschutter.junixsocket/junixsocket-common &ndash;&gt;-->
-    <!--<dependency>-->
-      <!--<groupId>com.kohlschutter.junixsocket</groupId>-->
-      <!--<artifactId>junixsocket-common</artifactId>-->
-      <!--<version>2.0.4</version>-->
-    <!--</dependency>-->
-
-    <!-- http://mvnrepository.com/artifact/com.kohlschutter.junixsocket/junixsocket-native-common -->
+   <!-- http://mvnrepository.com/artifact/com.kohlschutter.junixsocket/junixsocket-native-common -->
     <dependency>
       <groupId>com.kohlschutter.junixsocket</groupId>
       <artifactId>junixsocket-native-common</artifactId>
