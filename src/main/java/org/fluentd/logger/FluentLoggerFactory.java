@@ -127,7 +127,7 @@ public class FluentLoggerFactory {
             }
         }
 
-        Sender sender = new AFUNIXSocketSender(new File("/etc/socketname"), port, timeout, bufferCapacity, reconnector);
+        Sender sender = new AFUNIXSocketSender(socketFile, port, timeout, bufferCapacity, reconnector);
 
         FluentLogger logger = new FluentLogger(tagPrefix, sender);
         loggers.put(logger, key);
