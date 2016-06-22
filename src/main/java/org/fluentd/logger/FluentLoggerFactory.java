@@ -24,9 +24,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.WeakHashMap;
 
-import org.fluentd.logger.sender.*;
+import org.fluentd.logger.sender.AFUNIXSocketSender;
+import org.fluentd.logger.sender.ExponentialDelayReconnector;
+import org.fluentd.logger.sender.RawSocketSender;
+import org.fluentd.logger.sender.Reconnector;
+import org.fluentd.logger.sender.Sender;
 
-@SuppressWarnings("ALL")
 public class FluentLoggerFactory {
 
     private final Map<FluentLogger, String> loggers;

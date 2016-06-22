@@ -33,17 +33,9 @@ public class FluentLogger {
         return factory.getLogger(tagPrefix, "localhost", 24224);
     }
 
-    public static FluentLogger getUnixLogger(String tagPrefix) {
-        String socketFilePath = "/tmp/socketname";
-        int port = 1025;
-
+    public static FluentLogger getUnixLogger(String tagPrefix, String socketFilePath) {
         File socketFile = new File(socketFilePath);
-        return factory.getUnixLogger(tagPrefix, socketFile, port);
-    }
-
-    public static FluentLogger getUnixLogger(String tagPrefix, String socketFilePath, int port) {
-        File socketFile = new File(socketFilePath);
-        return factory.getUnixLogger(tagPrefix, socketFile, port);
+        return factory.getUnixLogger(tagPrefix, socketFile, 0);
     }
 
     public static FluentLogger getLogger(String tagPrefix, String host, int port) {
