@@ -22,10 +22,8 @@ public class AFUNIXSocketSender implements Sender {
 
     private MessagePack msgpack;
 
-//    private SocketAddress server;
     private AFUNIXSocketAddress server;
 
-//    private Socket socket;
     private AFUNIXSocket socket;
 
     private int timeout;
@@ -39,8 +37,6 @@ public class AFUNIXSocketSender implements Sender {
     private String name;
 
     private ErrorHandler errorHandler = DEFAULT_ERROR_HANDLER;
-
-    private String defaultSocketFilePath = "";
 
     // TODO:
     public AFUNIXSocketSender(File socketFile, int port) {

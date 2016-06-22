@@ -11,8 +11,8 @@ import java.util.Properties;
 
 public class Logger {
 
-    private static FluentLogger LOG = FluentLogger.getUnixLogger("raw", "/etc/socketname");
-//    private static FluentLogger LOG = FluentLogger.getUnixLogger("raw", "/tmp/bevo/socket.sockd", 0);
+//    private static FluentLogger LOG = FluentLogger.getUnixLogger("raw", "/etc/socketname");
+    private static FluentLogger LOG = FluentLogger.getUnixLogger("raw", "/tmp/bevo/socket.sockd");
 //    private static FluentLogger LOG = FluentLogger.getLogger("app");
 
     public void doApplicationLogic() {

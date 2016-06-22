@@ -54,17 +54,10 @@ public class FluentLoggerFactory {
             Reconnector reconnector) {
         String key = String.format("%s_%s_%d_%d_%d", new Object[] { tagPrefix, host, port, timeout, bufferCapacity });
 
-        for (Map.Entry<FluentLogger, String> entry : loggers.entrySet()) {
-            if (entry.getValue().equals(key)) {
-                FluentLogger found = entry.getKey();
-                if(found != null) {
-                    return found;
-                }
-                break;
-            }
-        }
+        FluentLogger found = getLoggerIfExists(key);
+        if (found != null) return found;
 
-        Sender sender = null;
+        Sender sender;
         Properties props = System.getProperties();
         if (!props.containsKey(Config.FLUENT_SENDER_CLASS)) {
             sender = new RawSocketSender(host, port, timeout, bufferCapacity, reconnector);
@@ -79,6 +72,19 @@ public class FluentLoggerFactory {
         FluentLogger logger = new FluentLogger(tagPrefix, sender);
         loggers.put(logger, key);
         return logger;
+    }
+
+    private FluentLogger getLoggerIfExists(String key) {
+        for (Map.Entry<FluentLogger, String> entry : loggers.entrySet()) {
+            if (entry.getValue().equals(key)) {
+                FluentLogger found = entry.getKey();
+                if(found != null) {
+                    return found;
+                }
+                break;
+            }
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
@@ -120,15 +126,8 @@ public class FluentLoggerFactory {
 
         String key = String.format("%s_%s_%d_%d_%d", new Object[] { tagPrefix, socketFile.toString(), port, timeout, bufferCapacity });
 
-        for (Map.Entry<FluentLogger, String> entry : loggers.entrySet()) {
-            if (entry.getValue().equals(key)) {
-                FluentLogger found = entry.getKey();
-                if(found != null) {
-                    return found;
-                }
-                break;
-            }
-        }
+        FluentLogger found = getLoggerIfExists(key);
+        if (found != null) return found;
 
         Sender sender = new AFUNIXSocketSender(socketFile, port, timeout, bufferCapacity, reconnector);
 
