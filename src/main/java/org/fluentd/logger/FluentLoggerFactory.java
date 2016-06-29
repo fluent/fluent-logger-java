@@ -17,18 +17,18 @@
 //
 package org.fluentd.logger;
 
+import org.fluentd.logger.sender.AFUNIXSocketSender;
+import org.fluentd.logger.sender.ExponentialDelayReconnector;
+import org.fluentd.logger.sender.RawSocketSender;
+import org.fluentd.logger.sender.Reconnector;
+import org.fluentd.logger.sender.Sender;
+
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.WeakHashMap;
-
-import org.fluentd.logger.sender.AFUNIXSocketSender;
-import org.fluentd.logger.sender.ExponentialDelayReconnector;
-import org.fluentd.logger.sender.RawSocketSender;
-import org.fluentd.logger.sender.Reconnector;
-import org.fluentd.logger.sender.Sender;
 
 public class FluentLoggerFactory {
 
@@ -74,7 +74,7 @@ public class FluentLoggerFactory {
         return logger;
     }
 
-    private FluentLogger getLoggerIfExists(String key) {
+    private synchronized FluentLogger getLoggerIfExists(String key) {
         for (Map.Entry<FluentLogger, String> entry : loggers.entrySet()) {
             if (entry.getValue().equals(key)) {
                 FluentLogger found = entry.getKey();
