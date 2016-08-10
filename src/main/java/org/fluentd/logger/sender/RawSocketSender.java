@@ -54,6 +54,8 @@ public class RawSocketSender implements Sender {
 
     private ErrorHandler errorHandler = DEFAULT_ERROR_HANDLER;
 
+    private long lastCannotSendLogTimestamp = 0;
+
     public RawSocketSender() {
         this("localhost", 24224);
     }
@@ -130,9 +132,7 @@ public class RawSocketSender implements Sender {
     }
 
     protected boolean emit(Event event) {
-        if (LOG.isTraceEnabled()) {
-            LOG.trace(String.format("Created %s", new Object[]{event}));
-        }
+        LOG.trace("Created {}", event);
 
         byte[] bytes = null;
         try {
@@ -162,7 +162,7 @@ public class RawSocketSender implements Sender {
         // buffering
         if (pendings.position() + bytes.length > pendings.capacity()) {
             if (!flushBuffer()) {
-                LOG.error("Cannot send logs to " + server.toString());
+                logCannotSendMaxOncePerMinute();
                 return false;
             }
         }
@@ -177,6 +177,14 @@ public class RawSocketSender implements Sender {
         flush();
 
         return true;
+    }
+
+    private void logCannotSendMaxOncePerMinute() {
+        // to not choke on our own log message
+        if(System.currentTimeMillis() + 60 * 1000 > lastCannotSendLogTimestamp) {
+            LOG.error("Cannot send logs to " + server.toString());
+            lastCannotSendLogTimestamp = System.currentTimeMillis();
+        }
     }
 
     @Override
