@@ -12,10 +12,7 @@ import java.io.BufferedInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -417,5 +414,55 @@ public class TestRawSocketSender {
         // check data
         assertEquals(0, bufferFull.getCount());
         assertEquals(i, elist.size());
+    }
+
+    @Test
+    public void testBufferOverflow() throws Exception {
+        // start mock fluentd
+        int port = MockFluentd.randomPort();
+        MockFluentd fluentd = new MockFluentd(port, new MockFluentd.MockProcess() {
+            public void process(MessagePack msgpack, Socket socket) throws IOException {
+                BufferedInputStream in = new BufferedInputStream(socket.getInputStream());
+                try {
+                    Unpacker unpacker = msgpack.createUnpacker(in);
+                    while (true) {
+                        unpacker.read(Event.class);
+                    }
+                    //socket.close();
+                } catch (EOFException e) {
+                    // ignore
+                }
+            }
+        });
+        fluentd.start();
+
+        // start senders
+        Sender sender = new RawSocketSender("localhost", port, 3000, 256);
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.put("large", randomString(512));
+        boolean success = sender.emit("tag.label1", data);
+        assertFalse(success);
+
+        // close sender sockets
+        sender.close();
+        // close mock server sockets
+        fluentd.close();
+    }
+
+    private static final String CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
+
+    private String randomString(int len) {
+        StringBuilder sb = new StringBuilder(len);
+
+        Random rnd = new Random();
+        for (int i = 0; i < len; i++) {
+            if (i != 0 && i % 128 == 0) {
+                sb.append("\r\n");
+            }
+
+            sb.append(CHARS.charAt(rnd.nextInt(CHARS.length())));
+        }
+
+        return sb.toString();
     }
 }
