@@ -2,9 +2,11 @@ package org.fluentd.logger;
 
 import org.fluentd.logger.errorhandler.ErrorHandler;
 import org.fluentd.logger.sender.Event;
+import org.fluentd.logger.sender.ExponentialDelayReconnector;
 import org.fluentd.logger.sender.NullSender;
 import org.fluentd.logger.sender.Sender;
 import org.fluentd.logger.util.MockFluentd;
+import org.junit.Before;
 import org.junit.Test;
 import org.msgpack.MessagePack;
 import org.msgpack.unpacker.Unpacker;
@@ -45,6 +47,12 @@ public class TestFluentLogger {
             }
             _logger.trace("Terminating FixedThreadManager");
         }
+    }
+
+    @Before
+    public void setUp() {
+        // To remove garbage loggers from org.fluentd.logger.FluentLoggerFactory.loggers...
+        System.gc();
     }
 
 
@@ -274,7 +282,7 @@ public class TestFluentLogger {
             assertTrue(lastError.get() instanceof IOException);
             lastError.set(null);    // Clear the last error
             assertFalse(logger.isConnected());
-            TimeUnit.MILLISECONDS.sleep(100);
+            TimeUnit.MILLISECONDS.sleep((long) (ExponentialDelayReconnector.WAIT_MILLIS * 1.5));
         }
 
         // the logger shouldn't call the error handler after calling removeErrorHandler()
@@ -311,6 +319,7 @@ public class TestFluentLogger {
         threadManager.submit(fluentd2);
         fluentd2.waitUntilReady();
 
+        TimeUnit.MILLISECONDS.sleep((long) (ExponentialDelayReconnector.WAIT_MILLIS * 1.5));
         {
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("k5", "v5");
