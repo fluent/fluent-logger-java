@@ -7,12 +7,12 @@ import java.util.LinkedList;
  * function of the number of connection errors.
  */
 public class ExponentialDelayReconnector implements Reconnector {
+    // Visible for test
+    public static final double WAIT_MILLIS = 500; // Start wait is 500ms
 
-    private double waitMillis = 50; // Start wait is 50ms
+    private static final double WAIT_INCR_RATE = 1.5;
 
-    private double waitIncrRate = 1.5;
-
-    private double waitMaxMillis = 60 * 1000; // Max wait is 1 minute
+    private static final double WAIT_MAX_MILLIS = 60 * 1000; // Max wait is 1 minute
 
     private int waitMaxCount;
 
@@ -24,12 +24,12 @@ public class ExponentialDelayReconnector implements Reconnector {
     }
 
     private int getWaitMaxCount() {
-        double r = waitMaxMillis / waitMillis;
+        double r = WAIT_MAX_MILLIS / WAIT_MILLIS;
         for (int j = 1; j <= 100; j++) {
-            if (r < waitIncrRate) {
+            if (r < WAIT_INCR_RATE) {
                 return j + 1;
             }
-            r = r / waitIncrRate;
+            r = r / WAIT_INCR_RATE;
         }
         return 100;
     }
@@ -57,9 +57,9 @@ public class ExponentialDelayReconnector implements Reconnector {
 
         double suppressMillis;
         if (size < waitMaxCount) {
-            suppressMillis = waitMillis * Math.pow(waitIncrRate, size - 1);
+            suppressMillis = WAIT_MILLIS * Math.pow(WAIT_INCR_RATE, size - 1);
         } else {
-            suppressMillis = waitMaxMillis;
+            suppressMillis = WAIT_MAX_MILLIS;
         }
 
         return (timestamp - errorHistory.getLast()) >= suppressMillis;
