@@ -52,6 +52,10 @@ public class RawSocketSender implements Sender {
 
     private String name;
 
+    private String host;
+
+    private int port;
+
     private ErrorHandler errorHandler = DEFAULT_ERROR_HANDLER;
 
     public RawSocketSender() {
@@ -71,6 +75,8 @@ public class RawSocketSender implements Sender {
         msgpack = new MessagePack();
         msgpack.register(Event.class, Event.EventTemplate.INSTANCE);
         pendings = ByteBuffer.allocate(bufferCapacity);
+        this.host = host;
+        this.port = port;
         server = new InetSocketAddress(host, port);
         this.reconnector = reconnector;
         name = String.format("%s_%d_%d_%d", host, port, timeout, bufferCapacity);
@@ -80,6 +86,7 @@ public class RawSocketSender implements Sender {
     private void connect() throws IOException {
         try {
             socket = new Socket();
+            server = new InetSocketAddress(host, port);
             socket.connect(server, timeout);
             out = new BufferedOutputStream(socket.getOutputStream());
         } catch (IOException e) {
