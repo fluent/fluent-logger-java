@@ -26,7 +26,6 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
@@ -37,8 +36,6 @@ public class RawSocketSender implements Sender {
     private static final ErrorHandler DEFAULT_ERROR_HANDLER = new ErrorHandler() {};
 
     private MessagePack msgpack;
-
-    private SocketAddress server;
 
     private Socket socket;
 
@@ -52,9 +49,9 @@ public class RawSocketSender implements Sender {
 
     private String name;
 
-    private String host;
+    private final String host;
 
-    private int port;
+    private final int port;
 
     private ErrorHandler errorHandler = DEFAULT_ERROR_HANDLER;
 
@@ -77,7 +74,6 @@ public class RawSocketSender implements Sender {
         pendings = ByteBuffer.allocate(bufferCapacity);
         this.host = host;
         this.port = port;
-        server = new InetSocketAddress(host, port);
         this.reconnector = reconnector;
         name = String.format("%s_%d_%d_%d", host, port, timeout, bufferCapacity);
         this.timeout = timeout;
@@ -86,8 +82,7 @@ public class RawSocketSender implements Sender {
     private void connect() throws IOException {
         try {
             socket = new Socket();
-            server = new InetSocketAddress(host, port);
-            socket.connect(server, timeout);
+            socket.connect(new InetSocketAddress(host, port), timeout);
             out = new BufferedOutputStream(socket.getOutputStream());
         } catch (IOException e) {
             throw e;
@@ -160,7 +155,7 @@ public class RawSocketSender implements Sender {
             if (pendings.position() == 0) {
                 return true;
             } else {
-                LOG.error("Cannot send logs to " + server.toString());
+                LOG.error("Cannot send logs to " + socket.getInetAddress().toString());
             }
         }
 
