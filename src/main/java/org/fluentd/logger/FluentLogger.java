@@ -112,6 +112,7 @@ public class FluentLogger {
             sender.close();
             sender = null;
         }
+        factory.purgeLogger(this);
     }
 
     public String getName() {
