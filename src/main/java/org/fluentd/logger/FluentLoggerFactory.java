@@ -19,6 +19,7 @@ package org.fluentd.logger;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -112,7 +113,7 @@ public class FluentLoggerFactory {
     }
 
     public synchronized void closeAll() {
-        for (FluentLogger logger : loggers.keySet()) {
+        for (FluentLogger logger : new ArrayList<FluentLogger>(loggers.keySet())) {
             logger.close();
         }
         loggers.clear();
