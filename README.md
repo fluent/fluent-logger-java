@@ -37,6 +37,8 @@ To use Fluent Logger for Java, set the above jar file to your classpath.
 Fluent Logger for Java is released on Fluent Maven2 repository.  You can 
 configure your pom.xml as follows to use it:
 
+**Maven:**
+
 ```xml
 <dependencies>
   ...
@@ -47,6 +49,14 @@ configure your pom.xml as follows to use it:
   </dependency>
   ...
 </dependencies>
+```
+
+**Gradle:**
+
+```gradle
+dependencies {
+    compile 'org.fluentd:fluent-logger:'+loggerVersion
+}
 ```
 
 ### Install from Github repository
@@ -63,7 +73,7 @@ You will get the fluent logger jar file in fluent-logger-java/target
 directory.  File name will be fluent-logger-${logger.version}-jar-with-dependencies.jar.
 For more detail, see pom.xml.
 
-**Replace ${logger.version} with the current version of Fluent Logger for Java.**
+**Replace `${logger.version}` or `loggerVersion` with the current version of Fluent Logger for Java.**
 
 ## Quickstart
 
