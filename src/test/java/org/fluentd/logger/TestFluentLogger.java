@@ -3,6 +3,7 @@ package org.fluentd.logger;
 import org.fluentd.logger.errorhandler.ErrorHandler;
 import org.fluentd.logger.sender.Event;
 import org.fluentd.logger.sender.NullSender;
+import org.fluentd.logger.sender.Sender;
 import org.fluentd.logger.util.MockFluentd;
 import org.junit.Test;
 import org.msgpack.MessagePack;
@@ -15,6 +16,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -70,6 +72,7 @@ public class TestFluentLogger {
 
         FixedThreadManager threadManager = new FixedThreadManager(1);
         threadManager.submit(fluentd);
+        fluentd.waitUntilReady();
 
         // start loggers
         FluentLogger logger = FluentLogger.getLogger("testtag", host, port);
@@ -137,6 +140,7 @@ public class TestFluentLogger {
         });
         FixedThreadManager threadManager = new FixedThreadManager(1);
         threadManager.submit(fluentd);
+        fluentd.waitUntilReady();
 
         // start loggers
         FluentLogger[] loggers = new FluentLogger[loggerCount];
@@ -227,6 +231,7 @@ public class TestFluentLogger {
             }
         });
         threadManager.submit(fluentd1);
+        fluentd1.waitUntilReady();
 
         // start a logger
         final FluentLogger logger = FluentLogger.getLogger("testtag", host, port);
@@ -304,9 +309,8 @@ public class TestFluentLogger {
             }
         });
         threadManager.submit(fluentd2);
+        fluentd2.waitUntilReady();
 
-        // the logger should send an event successfully
-        TimeUnit.MILLISECONDS.sleep(500);
         {
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("k5", "v5");
@@ -348,7 +352,7 @@ public class TestFluentLogger {
         FluentLogger.getLogger("tag2");
         FluentLogger.getLogger("tag3");
 
-        Map<String, FluentLogger> loggers;
+        Map<FluentLogger, String> loggers;
         {
             loggers = FluentLogger.getLoggers();
             assertEquals(3, loggers.size());
@@ -398,7 +402,7 @@ public class TestFluentLogger {
 
         FixedThreadManager threadManager = new FixedThreadManager(1);
         threadManager.submit(fluentd);
-        Thread.sleep(1000);
+        fluentd.waitUntilReady();
 
         final FluentLogger logger = FluentLogger.getLogger(null, host, port);
         ExecutorService executorService = Executors.newFixedThreadPool(N);
@@ -447,5 +451,70 @@ public class TestFluentLogger {
         for (int i = 0; i < N; i++) {
             assertEquals((i * LOOP * (N - i)), (long)counters.get(i));
         }
+    }
+
+    @Test
+    public void testFlushOnClose() throws Exception {
+        // start mock fluentd
+        int port = MockFluentd.randomPort();
+        String host = "localhost";
+        final List<Event> elist = new ArrayList<Event>();
+        final CountDownLatch latch = new CountDownLatch(1);
+        MockFluentd fluentd = new MockFluentd(port, new MockFluentd.MockProcess() {
+            public void process(MessagePack msgpack, Socket socket) throws IOException {
+                BufferedInputStream in = new BufferedInputStream(socket.getInputStream());
+                try {
+                    Unpacker unpacker = msgpack.createUnpacker(in);
+                    while (true) {
+                        Event e = unpacker.read(Event.class);
+                        elist.add(e);
+                        latch.countDown();
+                    }
+                    //socket.close();
+                } catch (EOFException e) {
+                    // ignore
+                }
+            }
+        });
+
+        FixedThreadManager threadManager = new FixedThreadManager(1);
+
+        // start loggers
+        FluentLogger logger = FluentLogger.getLogger("prefix", host, port);
+        {
+            Map<String, Object> data = new HashMap<String, Object>();
+            data.put("k", "v");
+            // Fluentd hasn't started yet and the record will be buffered.
+            logger.log("tag", data);
+        }
+
+        threadManager.submit(fluentd);
+        fluentd.waitUntilReady();
+
+        // close loggers and it should flush the buffer
+        logger.close();
+
+        // wait for fluentd's getting at least one kv pair
+        latch.await(3, TimeUnit.SECONDS);
+
+        // close mock fluentd
+        fluentd.close();
+
+        // wait for unpacking event data on fluentd
+        threadManager.join();
+
+        // check data
+        assertEquals(1, elist.size());
+        Event ev = elist.get(0);
+        assertEquals("prefix.tag", ev.tag);
+        assertEquals(1, ev.data.size());
+        assertTrue(ev.data.containsKey("k"));
+        assertTrue(ev.data.containsValue("v"));
+    }
+
+    public void testGetSender() {
+        FluentLogger logger = FluentLogger.getLogger("prefix");
+        Sender sender = logger.getSender();
+        assertNotNull(sender);
     }
 }

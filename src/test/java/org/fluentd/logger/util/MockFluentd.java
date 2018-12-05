@@ -148,6 +148,17 @@ public class MockFluentd extends Thread {
         _logger.debug("Terminated MockFluentd port:" + serverSocket.getLocalPort());
     }
 
+    public void waitUntilReady()
+            throws InterruptedException
+    {
+        int tick = 200;
+        while (!started.get()) {
+            TimeUnit.MILLISECONDS.sleep(tick);
+        }
+        // Just in case
+        TimeUnit.MILLISECONDS.sleep(tick);
+    }
+
     public void close() throws IOException {
         finished.set(true);
         service.shutdown();

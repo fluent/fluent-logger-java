@@ -1,5 +1,7 @@
 # Fluent Logger for Java
 
+[![Build Status](https://travis-ci.org/fluent/fluent-logger-java.svg?branch=master)](https://travis-ci.org/fluent/fluent-logger-java)
+
 ## Overview
 
 Many web/mobile applications generate huge amount of event logs (c,f. login,
@@ -7,7 +9,7 @@ logout, purchase, follow, etc).  Analyzing these event logs can be quite
 valuable for improving services.  However, collecting these logs easily and 
 reliably is a challenging task.
 
-Fluentd solves the problem by having: easy installation, small footprint, plugins
+Fluentd solves the problem by having: easy installation, small footprint, plugins,
 reliable buffering, log forwarding, etc.
 
   * Fluentd website: [http://github.com/fluent/fluentd](http://github.com/fluent/fluentd)
@@ -24,7 +26,7 @@ Java >= 1.6
 
 You can download all-in-one jar file for Fluent Logger for Java.
 
-    $ wget http://fluentd.org/releases/java/fluent-logger-${logger.version}-jar-with-dependencies.jar
+    $ wget http://central.maven.org/maven2/org/fluentd/fluent-logger/${logger.version}/fluent-logger-${logger.version}-jar-with-dependencies.jar   
 
 To use Fluent Logger for Java, set the above jar file to your classpath.
 
@@ -71,7 +73,7 @@ The following program is a small example of Fluent Logger for Java.
 
         public void doApplicationLogic() {
             // ...
-            Map<String, String> data = new HashMap<String, String>();
+            Map<String, Object> data = new HashMap<String, Object>();
             data.put("from", "userA");
             data.put("to", "userB");
             LOG.log("follow", data);
@@ -92,7 +94,7 @@ Then, please create the events like this.  This will send the event to fluentd,
 with tag 'app.follow' and the attributes 'from' and 'to'.
 
 Close method in FluentLogger class should be called explicitly when application 
-is finished.  The method close socket connection with the fluentd.
+is finished.  The method closes socket connection with the fluentd.
 
     FluentLogger.close();
 

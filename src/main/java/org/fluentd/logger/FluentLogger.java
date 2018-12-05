@@ -48,7 +48,7 @@ public class FluentLogger {
     /**
      * the method is for testing
      */
-    static Map<String, FluentLogger> getLoggers() {
+    static Map<FluentLogger, String> getLoggers() {
         return factory.getLoggers();
     }
 
@@ -108,6 +108,7 @@ public class FluentLogger {
 
     public void close() {
         if (sender != null) {
+            sender.flush();
             sender.close();
             sender = null;
         }
@@ -150,6 +151,7 @@ public class FluentLogger {
         }
     }
 
-
-
+    public Sender getSender() {
+        return sender;
+    }
 }
