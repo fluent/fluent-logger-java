@@ -17,16 +17,18 @@
 //
 package org.fluentd.logger;
 
+import org.fluentd.logger.sender.AFUNIXSocketSender;
+import org.fluentd.logger.sender.ExponentialDelayReconnector;
+import org.fluentd.logger.sender.RawSocketSender;
+import org.fluentd.logger.sender.Reconnector;
+import org.fluentd.logger.sender.Sender;
+
+import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.WeakHashMap;
-
-import org.fluentd.logger.sender.ExponentialDelayReconnector;
-import org.fluentd.logger.sender.RawSocketSender;
-import org.fluentd.logger.sender.Reconnector;
-import org.fluentd.logger.sender.Sender;
 
 public class FluentLoggerFactory {
 
@@ -52,20 +54,12 @@ public class FluentLoggerFactory {
             Reconnector reconnector) {
         String key = String.format("%s_%s_%d_%d_%d", new Object[] { tagPrefix, host, port, timeout, bufferCapacity });
 
-        for (Map.Entry<FluentLogger, String> entry : loggers.entrySet()) {
-            if (entry.getValue().equals(key)) {
-                FluentLogger found = entry.getKey();
-                if(found != null) {
-                    return found;
-                }
-                break;
-            }
-        }
+        FluentLogger found = getLoggerIfExists(key);
+        if (found != null) return found;
 
-        Sender sender = null;
+        Sender sender;
         Properties props = System.getProperties();
         if (!props.containsKey(Config.FLUENT_SENDER_CLASS)) {
-            // create default sender object
             sender = new RawSocketSender(host, port, timeout, bufferCapacity, reconnector);
         } else {
             String senderClassName = props.getProperty(Config.FLUENT_SENDER_CLASS);
@@ -78,6 +72,19 @@ public class FluentLoggerFactory {
         FluentLogger logger = new FluentLogger(tagPrefix, sender);
         loggers.put(logger, key);
         return logger;
+    }
+
+    private synchronized FluentLogger getLoggerIfExists(String key) {
+        for (Map.Entry<FluentLogger, String> entry : loggers.entrySet()) {
+            if (entry.getValue().equals(key)) {
+                FluentLogger found = entry.getKey();
+                if(found != null) {
+                    return found;
+                }
+                break;
+            }
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
@@ -110,4 +117,22 @@ public class FluentLoggerFactory {
         }
     }
 
+    public FluentLogger getUnixLogger(String tagPrefix, File socketFile, int port) {
+        return getUnixLogger(tagPrefix, socketFile, port, 3 * 1000, 1 * 1024 * 1024, new ExponentialDelayReconnector());
+    }
+
+    public synchronized FluentLogger getUnixLogger(String tagPrefix, File socketFile, int port, int timeout, int bufferCapacity,
+                                                   Reconnector reconnector) {
+
+        String key = String.format("%s_%s_%d_%d_%d", new Object[] { tagPrefix, socketFile.toString(), port, timeout, bufferCapacity });
+
+        FluentLogger found = getLoggerIfExists(key);
+        if (found != null) return found;
+
+        Sender sender = new AFUNIXSocketSender(socketFile, port, timeout, bufferCapacity, reconnector);
+
+        FluentLogger logger = new FluentLogger(tagPrefix, sender);
+        loggers.put(logger, key);
+        return logger;
+    }
 }
