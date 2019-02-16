@@ -19,7 +19,10 @@ package org.fluentd.logger;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.WeakHashMap;
 
@@ -80,6 +83,18 @@ public class FluentLoggerFactory {
         return logger;
     }
 
+    /** Purges an invalid logger from the cache.
+     */
+	protected synchronized void purgeLogger(FluentLogger logger) {
+		Iterator<Entry<FluentLogger, String>> it = loggers.entrySet().iterator();
+		while (it.hasNext()) {
+			if (it.next().getKey() == logger) {
+				it.remove();
+				return;
+			}
+		}
+	}
+
     @SuppressWarnings("unchecked")
     private Sender createSenderInstance(final String className, final Object[] params) throws ClassNotFoundException,
             SecurityException, NoSuchMethodException, IllegalArgumentException, InstantiationException,
@@ -98,7 +113,7 @@ public class FluentLoggerFactory {
     }
 
     public synchronized void closeAll() {
-        for (FluentLogger logger : loggers.keySet()) {
+        for (FluentLogger logger : new ArrayList<FluentLogger>(loggers.keySet())) {
             logger.close();
         }
         loggers.clear();
