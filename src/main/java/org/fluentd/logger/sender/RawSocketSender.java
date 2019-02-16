@@ -99,7 +99,7 @@ public class RawSocketSender implements Sender {
     }
 
     @Override
-    public void close() {
+    public synchronized void close() {
         // close output stream
         if (out != null) {
             try {
