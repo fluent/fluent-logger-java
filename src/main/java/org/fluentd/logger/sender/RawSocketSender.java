@@ -203,7 +203,7 @@ public class RawSocketSender implements Sender {
             catch (Exception handlerException) {
                 LOG.warn("ErrorHandler.handleNetworkError failed", handlerException);
             }
-            LOG.error(this.getClass().getName(), "flush", e);
+            LOG.error("flush failed", e);
             reconnector.addErrorHistory(System.currentTimeMillis());
             close();
         }
