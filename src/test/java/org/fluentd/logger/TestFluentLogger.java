@@ -442,7 +442,7 @@ public class TestFluentLogger {
                 }
             });
         }
-        Thread.sleep(1000);
+        Thread.sleep(4000);
         executorService.shutdown();
         executorService.awaitTermination(300, TimeUnit.SECONDS);
 
