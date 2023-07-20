@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.junit.Assert.*;
 
 public class TestFluentLogger {
-    private static boolean hasExecuted = false;
+    private static volatile boolean hasExecuted = false;
     private Logger _logger = LoggerFactory.getLogger(TestFluentLogger.class);
 
     class FixedThreadManager {
@@ -444,7 +444,7 @@ public class TestFluentLogger {
                 }
             });
         }
-        while(!hasExecuted) { 
+        while (!hasExecuted) { 
             Thread.yield(); 
         }
         Thread.sleep(1000);
